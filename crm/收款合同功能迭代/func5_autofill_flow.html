@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能五 - 电子签主体自动拉取流程</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #fff; padding: 32px 48px; display: flex; justify-content: center; }
+  .flowchart { max-width: 880px; width: 100%; }
+  h3 { font-size: 15px; color: #666; margin-bottom: 24px; font-weight: 500; }
+  .flow-table { margin: 0 auto; border-collapse: collapse; }
+  .flow-table td { padding: 0; vertical-align: middle; text-align: center; }
+  .box { display: inline-block; padding: 10px 18px; border-radius: 6px; font-size: 14px; font-weight: 500; text-align: center; }
+  .box-start { background: #e6f7ff; border: 1.5px solid #91d5ff; color: #096dd9; border-radius: 20px; }
+  .box-action { background: #fff; border: 1.5px solid #d9d9d9; color: #1a1a1a; }
+  .box-check { background: #fffbe6; border: 1.5px solid #ffe58f; color: #7c6c00; }
+  .box-loading { background: #f0f5ff; border: 1.5px solid #adc6ff; color: #1d39c4; }
+  .box-ok { background: #f6ffed; border: 1.5px solid #b7eb8f; color: #237804; border-radius: 20px; }
+  .box-warn { background: #fff7e6; border: 1.5px solid #ffd591; color: #ad6800; }
+  .box-end { background: #f5f5f5; border: 1.5px solid #d9d9d9; color: #595959; border-radius: 20px; }
+  .arr-v { display: flex; flex-direction: column; align-items: center; }
+  .arr-v .vl { width: 2px; height: 20px; background: #bfbfbf; }
+  .arr-v .vt { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #bfbfbf; }
+  .arr-h-r { display: flex; align-items: center; }
+  .arr-h-r .hl { height: 2px; background: #bfbfbf; }
+  .arr-h-r .ht { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid #bfbfbf; }
+  .arr-h-l { display: flex; align-items: center; flex-direction: row-reverse; }
+  .arr-h-l .hl { height: 2px; background: #bfbfbf; }
+  .arr-h-l .ht { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 7px solid #bfbfbf; }
+  .label { font-size: 12px; color: #666; }
+</style>
+</head>
+<body>
+<div class="flowchart">
+  <h3>电子签主体自动拉取状态流程</h3>
+
+  <table class="flow-table">
+    <tbody>
+      <tr>
+        <td colspan="5" style="padding-bottom:2px;">
+          <div class="box box-start">进入电子签配置界面</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="arr-v"><div class="vl"></div><div class="vt"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="box box-check">合同已关联客户 ID？</div>
+        </td>
+      </tr>
+
+      <!-- Branch row: 是 left, 否 right -->
+      <tr>
+        <td style="width:200px;">
+          <div style="display:flex;align-items:flex-end;justify-content:flex-end;padding-right:2px;">
+            <span class="label" style="color:#237804;font-weight:600;">是</span>
+          </div>
+        </td>
+        <td style="width:16px;">
+          <div style="width:2px;height:20px;background:#bfbfbf;margin:0 auto;"></div>
+        </td>
+        <td style="width:60px;"></td>
+        <td style="width:16px;">
+          <div style="width:2px;height:20px;background:#bfbfbf;margin:0 auto;"></div>
+        </td>
+        <td style="width:200px;">
+          <div style="display:flex;align-items:flex-end;justify-content:flex-start;padding-left:2px;">
+            <span class="label" style="color:#f5222d;font-weight:600;">否</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="arr-h-r"><div class="hl" style="width:80px;"></div><div class="ht"></div></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div class="arr-h-l"><div class="hl" style="width:80px;"></div><div class="ht"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:0 8px;">
+          <div class="box box-loading" style="font-size:13px;">调用接口拉取签约主体<br><span style="font-size:11px;font-weight:400;color:#2f54eb;">Loading 状态</span></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="padding:0 8px;">
+          <div class="box box-warn" style="font-size:13px;">切换到手动填写模式<br><span style="font-size:11px;font-weight:400;color:#ad6800;">「手动填写」标签</span></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="arr-v"><div class="vl"></div><div class="vt"></div></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div class="arr-v"><div class="vl"></div><div class="vt"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="box box-check" style="font-size:13px;">拉取结果？</div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div class="box box-end" style="font-size:13px;">用户手动填写签约主体</div>
+        </td>
+      </tr>
+
+      <!-- Branch: 成功 vs 失败 -->
+      <tr>
+        <td>
+          <div class="arr-v"><div class="vl"></div><div class="vt"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div style="display:flex;gap:16px;align-items:flex-start;justify-content:center;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#237804;font-weight:600;">成功</span>
+              <div class="arr-v"><div class="vl" style="height:12px;"></div><div class="vt"></div></div>
+              <div class="box box-ok" style="font-size:13px;">自动填充签约主体<br>「自动填充」标签</div>
+            </div>
+            <div style="width:20px;"></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#f5222d;font-weight:600;">失败/超时</span>
+              <div class="arr-v"><div class="vl" style="height:12px;"></div><div class="vt"></div></div>
+              <div class="box box-warn" style="font-size:13px;">降级手动填写<br>审批节点需额外确认</div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

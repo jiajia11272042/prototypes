@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能二 - GLOBAL切换确认弹窗</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: rgba(0,0,0,0.45); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 40px; }
+  .dialog { background: #fff; border-radius: 10px; width: 520px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); overflow: hidden; }
+  .dialog-header { padding: 22px 28px 18px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+  .dialog-header h3 { font-size: 17px; font-weight: 700; color: #cf1322; display: flex; align-items: center; gap: 8px; }
+  .dialog-body { padding: 20px 28px; }
+  .warn-box { background: #fff1f0; border: 1.5px solid #ff7875; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+  .warn-box .warn-title { font-size: 14px; font-weight: 600; color: #a8071a; margin-bottom: 6px; }
+  .warn-box .warn-text { font-size: 13px; color: #820014; line-height: 1.7; }
+  .info-box { background: #fffbe6; border: 1.5px solid #ffe58f; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  .info-box .info-text { font-size: 13px; color: #7c4a00; line-height: 1.7; }
+  .affected-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 10px; }
+  .country-grid { display: flex; flex-wrap: wrap; gap: 8px; background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 14px; }
+  .country-tag { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #d9d9d9; border-radius: 20px; padding: 5px 14px; font-size: 13px; color: #333; }
+  .count-tip { width: 100%; font-size: 12px; color: #999; margin-top: 4px; }
+  .dialog-footer { padding: 16px 28px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; background: #fafafa; }
+  .btn { padding: 8px 22px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-cancel { background: #fff; border: 1px solid #d9d9d9; color: #555; }
+  .btn-export { background: #fff7e6; border: 1.5px solid #ffa940; color: #d46b08; }
+  .btn-confirm { background: #ff4d4f; border: 1.5px solid #ff4d4f; color: #fff; }
+</style>
+</head>
+<body>
+<div class="dialog">
+  <div class="dialog-header">
+    <h3>⚠️ 确认切换为全球（Global）</h3>
+  </div>
+  <div class="dialog-body">
+    <div class="warn-box">
+      <div class="warn-title">以下国家数据将被永久删除</div>
+      <div class="warn-text">
+        该操作<strong>不可撤销</strong>。7天内可通过 IT 工单申请恢复（钉钉"IT运维值班"群），超7天无法保证。<br>
+        建议先点「导出备份」保存数据，再执行删除。
+      </div>
+    </div>
+    <div class="info-box">
+      <div class="info-text">⚠ 该包名当月存在已锁定计提记录，切换后将影响计提数据，建议与运营主管确认后操作。</div>
+    </div>
+    <div class="affected-title">将删除的国家数据（共 5 条）</div>
+    <div class="country-grid">
+      <span class="country-tag">🇨🇳 中国（CN）</span>
+      <span class="country-tag">🇺🇸 美国（US）</span>
+      <span class="country-tag">🇬🇧 英国（UK）</span>
+      <span class="country-tag">🇩🇪 德国（DE）</span>
+      <span class="country-tag">🇯🇵 日本（JP）</span>
+      <div class="count-tip">确认后以上国家数据全部删除，仅保留「全球（Global）」</div>
+    </div>
+  </div>
+  <div class="dialog-footer">
+    <button class="btn btn-cancel">取消</button>
+    <button class="btn btn-export">导出备份</button>
+    <button class="btn btn-confirm">确认删除</button>
+  </div>
+</div>
+</body>
+</html>

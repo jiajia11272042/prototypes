@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能六 - Excel批量导入</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 24px; }
+  .dialog { background: #fff; border-radius: 8px; width: 560px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); overflow: hidden; }
+  .dialog-header { padding: 20px 24px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .dialog-header h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+  .dialog-body { padding: 20px 24px; }
+  .dialog-footer { padding: 16px 24px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+  .btn { padding: 7px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; border: none; }
+  .btn-default { background: #fff; border: 1px solid #d9d9d9; color: #333; }
+  .btn-primary { background: #1890ff; color: #fff; }
+  .btn-warning { background: #ff7a00; color: #fff; }
+  .step-row { display: flex; gap: 16px; margin-bottom: 20px; }
+  .step { flex: 1; text-align: center; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: #1890ff; color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; }
+  .step-label { font-size: 12px; color: #666; }
+  .upload-area { border: 2px dashed #d9d9d9; border-radius: 6px; padding: 24px; text-align: center; cursor: pointer; margin-bottom: 16px; background: #fafafa; }
+  .upload-area:hover { border-color: #1890ff; background: #e6f7ff; }
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; color: #333; margin-bottom: 4px; }
+  .upload-hint { font-size: 12px; color: #999; }
+  .template-link { color: #1890ff; font-size: 13px; cursor: pointer; text-decoration: none; }
+  .result-box { border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+  .result-header { background: #fafafa; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .result-title { font-size: 13px; font-weight: 600; color: #333; }
+  .result-stats { display: flex; gap: 16px; }
+  .stat { font-size: 12px; }
+  .stat-success { color: #52c41a; }
+  .stat-error { color: #f5222d; }
+  .result-table { width: 100%; font-size: 12px; }
+  .result-table th { background: #fafafa; padding: 8px 12px; text-align: left; color: #666; border-bottom: 1px solid #f0f0f0; }
+  .result-table td { padding: 8px 12px; border-bottom: 1px solid #f9f9f9; color: #333; }
+  .err-badge { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; border-radius: 3px; padding: 1px 6px; font-size: 11px; }
+  .ok-badge { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; border-radius: 3px; padding: 1px 6px; font-size: 11px; }
+  .download-err { color: #f5222d; font-size: 12px; cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="dialog">
+  <div class="dialog-header">
+    <h3>📥 Excel 批量导入合同</h3>
+    <span style="color:#999;cursor:pointer;font-size:18px;">×</span>
+  </div>
+  <div class="dialog-body">
+    <div class="step-row">
+      <div class="step"><div class="step-num">1</div><div class="step-label">下载模板</div></div>
+      <div class="step" style="flex:0;align-self:center;padding-top:-12px;color:#d9d9d9">——</div>
+      <div class="step"><div class="step-num">2</div><div class="step-label">填写上传</div></div>
+      <div class="step" style="flex:0;align-self:center;padding-top:-12px;color:#d9d9d9">——</div>
+      <div class="step"><div class="step-num" style="background:#f0f0f0;color:#999">3</div><div class="step-label" style="color:#999">查看结果</div></div>
+    </div>
+
+    <!-- 上传后的错误结果视图 -->
+    <div class="result-box">
+      <div class="result-header">
+        <span class="result-title">导入结果：contracts_batch_0410.xlsx</span>
+        <div class="result-stats">
+          <span class="stat stat-success">✓ 成功 8 条</span>
+          <span class="stat stat-error">✗ 失败 3 条</span>
+        </div>
+      </div>
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>行号</th>
+            <th>客户名称</th>
+            <th>错误原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>第 3 行</td>
+            <td>XX广告传媒</td>
+            <td><span class="err-badge">是否有保底：必填</span></td>
+          </tr>
+          <tr>
+            <td>第 7 行</td>
+            <td>全球营销集团</td>
+            <td><span class="err-badge">合同形式：枚举值不合法</span></td>
+          </tr>
+          <tr>
+            <td>第 11 行</td>
+            <td>科技创新公司</td>
+            <td><span class="err-badge">签署日期：格式错误（应为 YYYY-MM-DD）</span></td>
+          </tr>
+          <tr>
+            <td>第 2 行</td>
+            <td>某某科技有限公司</td>
+            <td><span class="ok-badge">导入成功</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;text-align:right;">
+      <a class="download-err">⬇ 下载失败数据 Excel（3条）</a>
+    </div>
+  </div>
+  <div class="dialog-footer">
+    <a class="template-link" style="margin-right:auto;line-height:32px;">⬇ 下载导入模板</a>
+    <button class="btn btn-default">关闭</button>
+    <button class="btn btn-warning">修改后重新上传</button>
+  </div>
+</div>
+</body>
+</html>

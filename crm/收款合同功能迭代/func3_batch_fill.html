@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能三 - 合同列表批量补填</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6fa; padding: 24px; }
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .page-header h2 { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+  .filter-bar { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .filter-item { display: flex; align-items: center; gap: 8px; }
+  .filter-item label { font-size: 13px; color: #666; white-space: nowrap; }
+  .filter-input { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; }
+  .filter-tag { padding: 5px 14px; background: #e6f7ff; border: 1px solid #91d5ff; border-radius: 4px; color: #1890ff; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .action-bar { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+  .action-bar span { font-size: 13px; color: #856404; }
+  .action-btn { padding: 5px 16px; background: #1890ff; color: #fff; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .table { width: 100%; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .table thead { background: #fafafa; }
+  .table th, .table td { padding: 12px 16px; font-size: 13px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+  .table th { color: #666; font-weight: 500; }
+  .table td { color: #333; }
+  .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .status-empty { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+  .status-filled { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .checkbox { width: 16px; height: 16px; cursor: pointer; }
+  .link { color: #1890ff; cursor: pointer; text-decoration: none; }
+  .countdown-banner { background: #fff2e8; border: 1px solid #ffbb96; border-radius: 6px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .countdown-banner .icon { font-size: 16px; }
+  .countdown-banner .text { font-size: 13px; color: #d4380d; }
+  .countdown-banner strong { color: #d4380d; }
+</style>
+</head>
+<body>
+<div style="max-width: 1100px; margin: 0 auto;">
+  <div class="page-header">
+    <h2>收款合同列表</h2>
+  </div>
+
+  <div class="countdown-banner">
+    <span class="icon">⚠️</span>
+    <span class="text">「是否有保底」补填过渡期剩余 <strong>3 天</strong>（截止 2026-04-13），请尽快完成补填，过期后系统将强制拦截保存</span>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-item">
+      <label>合同编号</label>
+      <input class="filter-input" type="text" placeholder="请输入合同编号" style="width: 160px;" />
+    </div>
+    <div class="filter-item">
+      <label>客户名称</label>
+      <input class="filter-input" type="text" placeholder="请输入客户名称" style="width: 160px;" />
+    </div>
+    <div class="filter-item">
+      <label>是否有保底</label>
+      <span class="filter-tag">🔍 未填写</span>
+    </div>
+    <button style="padding: 6px 16px; background: #1890ff; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">查询</button>
+    <button style="padding: 6px 16px; background: #fff; color: #666; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; cursor: pointer;">重置</button>
+  </div>
+
+  <div class="action-bar">
+    <span>已选中 <strong>3</strong> 条合同</span>
+    <button class="action-btn">批量设置「是否有保底」</button>
+    <span style="font-size: 12px; color: #999; margin-left: 4px;">（过渡期内专属入口）</span>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th><input type="checkbox" class="checkbox" checked /></th>
+        <th>合同编号</th>
+        <th>客户名称</th>
+        <th>业务线</th>
+        <th>销售</th>
+        <th>是否有保底</th>
+        <th>合同状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="checkbox" class="checkbox" checked /></td>
+        <td>CRM-2024-001</td>
+        <td>某某科技有限公司</td>
+        <td>广告-Miads</td>
+        <td>张三</td>
+        <td><span class="status-badge status-empty">未填写</span></td>
+        <td>审批中</td>
+        <td><a class="link">查看</a></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="checkbox" checked /></td>
+        <td>CRM-2024-002</td>
+        <td>XX广告传媒</td>
+        <td>广告-Miads</td>
+        <td>李四</td>
+        <td><span class="status-badge status-empty">未填写</span></td>
+        <td>已签署</td>
+        <td><a class="link">查看</a></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="checkbox" checked /></td>
+        <td>CRM-2024-003</td>
+        <td>全球营销集团</td>
+        <td>广告-Miads</td>
+        <td>王五</td>
+        <td><span class="status-badge status-empty">未填写</span></td>
+        <td>草稿</td>
+        <td><a class="link">查看</a></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" class="checkbox" /></td>
+        <td>CRM-2024-004</td>
+        <td>科技创新公司</td>
+        <td>广告-Miads</td>
+        <td>赵六</td>
+        <td><span class="status-badge status-filled">已填写：是</span></td>
+        <td>审批中</td>
+        <td><a class="link">查看</a></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

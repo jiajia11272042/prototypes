@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能一 - 合同形式（线上）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6fa; padding: 24px; }
+  .card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+  .form-row { display: flex; gap: 24px; margin-bottom: 16px; }
+  .form-item { flex: 1; }
+  .form-item label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+  .form-item label .required { color: #f5222d; margin-left: 2px; }
+  .form-item .value { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; color: #1a1a1a; background: #fff; }
+  .form-item .value.disabled { background: #f5f5f5; color: #999; cursor: not-allowed; display: flex; align-items: center; gap: 6px; }
+  .form-item .value.select { display: flex; justify-content: space-between; align-items: center; }
+  .form-item .value.highlight { border-color: #1890ff; background: #e6f7ff; color: #1890ff; font-weight: 500; }
+  .lock-icon { color: #999; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+  .badge-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+  .badge-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+  .tip { font-size: 12px; color: #fa8c16; margin-top: 4px; }
+  .section-note { background: #e6f7ff; border-left: 3px solid #1890ff; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #1890ff; margin-bottom: 20px; }
+  .tag-online { display: inline-block; background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; border-radius: 4px; padding: 2px 10px; font-size: 12px; font-weight: 500; margin-left: 8px; }
+  h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div style="max-width: 900px; margin: 0 auto;">
+  <h2>合同详情 <span class="tag-online">线上</span></h2>
+  <p class="subtitle">Miads · 新签合同 · 审批中</p>
+
+  <div class="card">
+    <div class="card-title">基本信息</div>
+    <div class="form-row">
+      <div class="form-item">
+        <label>业务线</label>
+        <div class="value">广告-Miads</div>
+      </div>
+      <div class="form-item">
+        <label>客户类型</label>
+        <div class="value">直客</div>
+      </div>
+      <div class="form-item">
+        <label>合同类型（新签/补充协议）</label>
+        <div class="value">新签</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-item">
+        <label>合同形式 <span class="required">*</span></label>
+        <div class="value highlight select">线上 <span>▼</span></div>
+      </div>
+      <div class="form-item">
+        <label>合同签署日期</label>
+        <div class="value">2026-04-01</div>
+      </div>
+      <div class="form-item"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">DPA / NDA 及签署进度</div>
+    <div class="section-note">🔒 当前合同形式为「线上」，以下字段已自动锁定，不可修改</div>
+    <div class="form-row">
+      <div class="form-item">
+        <label>是否需要 DPA</label>
+        <div class="value disabled"><span class="lock-icon">🔒</span> 是（自动锁定）</div>
+      </div>
+      <div class="form-item">
+        <label>是否需要 NDA</label>
+        <div class="value disabled"><span class="lock-icon">🔒</span> 是（自动锁定）</div>
+      </div>
+      <div class="form-item">
+        <label>签署进度</label>
+        <div class="value disabled"><span class="lock-icon">🔒</span> 双方已签（自动锁定）</div>
+      </div>
+    </div>
+    <p class="tip">如需修改，请将合同形式切换为「线下」</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">产品信息</div>
+    <div class="form-row">
+      <div class="form-item">
+        <label>包名 <span class="required">*</span></label>
+        <div class="value">com.example.app</div>
+      </div>
+      <div class="form-item">
+        <label>国家 <span class="required">*</span></label>
+        <div class="value select">全球（Global） <span>▼</span></div>
+      </div>
+      <div class="form-item">
+        <label>结算方式 <span class="required">*</span></label>
+        <div class="value select">CPM <span>▼</span></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-item">
+        <label>单价 <span class="required">*</span></label>
+        <div class="value">5.00</div>
+      </div>
+      <div class="form-item">
+        <label>是否有保底 <span class="required">*</span></label>
+        <div class="value select">是 <span>▼</span></div>
+      </div>
+      <div class="form-item">
+        <label>保底金额 <span class="required">*</span></label>
+        <div class="value">10,000.00</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

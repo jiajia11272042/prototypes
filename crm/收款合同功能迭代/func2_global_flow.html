@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能二 - GLOBAL选择流程</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #fff; padding: 40px 60px; display: flex; justify-content: center; }
+  .flowchart { max-width: 780px; width: 100%; }
+  h3 { font-size: 15px; color: #666; margin-bottom: 24px; font-weight: 500; }
+  .row { display: flex; align-items: center; gap: 0; }
+  .box { padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; text-align: center; white-space: nowrap; }
+  .box-start { background: #e6f7ff; border: 1.5px solid #91d5ff; color: #096dd9; border-radius: 20px; }
+  .box-action { background: #fff; border: 1.5px solid #d9d9d9; color: #1a1a1a; }
+  .box-check { background: #fffbe6; border: 1.5px solid #ffe58f; color: #7c6c00; }
+  .box-confirm { background: #fff1f0; border: 1.5px solid #ffa39e; color: #a8071a; }
+  .box-end-ok { background: #f6ffed; border: 1.5px solid #b7eb8f; color: #237804; border-radius: 20px; }
+  .box-end-cancel { background: #f5f5f5; border: 1.5px solid #d9d9d9; color: #595959; border-radius: 20px; }
+  .arrow { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; color: #999; font-size: 12px; }
+  .arrow-h { display: flex; align-items: center; gap: 2px; padding: 0 8px; }
+  .arrow-h .line { width: 32px; height: 2px; background: #bfbfbf; }
+  .arrow-h .tip { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 7px solid #bfbfbf; }
+  .arrow-v { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .arrow-v .line { width: 2px; height: 22px; background: #bfbfbf; }
+  .arrow-v .tip { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #bfbfbf; }
+  .arrow-v .label { font-size: 12px; color: #666; margin-bottom: 2px; }
+  .branch { display: flex; align-items: flex-start; gap: 0; }
+  .branch-left { display: flex; flex-direction: column; align-items: center; }
+  .branch-right { display: flex; flex-direction: column; align-items: center; }
+  .step { display: flex; flex-direction: column; align-items: center; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .branch-line { display: flex; align-items: flex-start; }
+  .h-line { height: 2px; background: #bfbfbf; align-self: center; }
+  .branch-connector { display: flex; align-items: stretch; }
+  .bend-connector { display: flex; align-items: center; }
+  table { border-collapse: collapse; }
+  .flow-table td { padding: 0; vertical-align: middle; text-align: center; }
+</style>
+</head>
+<body>
+<div class="flowchart">
+  <h3>GLOBAL 国家选择流程</h3>
+
+  <table class="flow-table" style="margin: 0 auto;">
+    <tbody>
+      <tr>
+        <td colspan="5">
+          <div class="box box-start">用户点击国家下拉</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="box box-action">下拉展示选项（含「全球 Global」）</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="box box-action">选择「全球（Global）」</div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5">
+          <div class="box box-check">同包名下是否已有具体国家数据？</div>
+        </td>
+      </tr>
+      <!-- Branch -->
+      <tr>
+        <td style="width:180px; text-align:right; padding-right:8px;">
+          <span style="font-size:12px;color:#999">是</span>
+        </td>
+        <td style="width:2px;">
+          <div style="width:2px;height:24px;background:#bfbfbf;margin:0 auto;"></div>
+        </td>
+        <td style="width:80px;"></td>
+        <td style="width:2px;">
+          <div style="width:2px;height:24px;background:#bfbfbf;margin:0 auto;"></div>
+        </td>
+        <td style="width:180px; text-align:left; padding-left:8px;">
+          <span style="font-size:12px;color:#999">否</span>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <!-- 是: 弹出确认弹窗 -->
+          <div style="display:flex;align-items:center;">
+            <div style="width:90px;height:2px;background:#bfbfbf;"></div>
+            <div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #bfbfbf;"></div>
+          </div>
+        </td>
+        <td style="width:2px;"></td>
+        <td></td>
+        <td style="width:2px;"></td>
+        <td>
+          <div style="display:flex;align-items:center;flex-direction:row-reverse;">
+            <div style="width:90px;height:2px;background:#bfbfbf;"></div>
+            <div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-right:7px solid #bfbfbf;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="box box-confirm" style="font-size:13px;">弹出确认弹窗<br><span style="font-size:11px;font-weight:400;">展示受影响国家数据明细<br>红色警示 + 导出备份按钮</span></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <div class="box box-end-ok">直接切换为 Global</div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="box box-check" style="font-size:13px;">用户操作确认</div>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="arrow-v"><div class="line"></div><div class="tip"></div></div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#389e0d;font-weight:600;">确认删除</span>
+              <div class="arrow-v"><div class="line" style="height:12px;"></div><div class="tip"></div></div>
+              <div class="box box-end-ok" style="font-size:12px;">删除具体国家 切换为 Global</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#fa8c16;font-weight:600;">导出备份</span>
+              <div class="arrow-v"><div class="line" style="height:12px;"></div><div class="tip"></div></div>
+              <div class="box box-action" style="font-size:12px;">下载 CSV<br>保持弹窗</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#595959;font-weight:600;">取消</span>
+              <div class="arrow-v"><div class="line" style="height:12px;"></div><div class="tip"></div></div>
+              <div class="box box-end-cancel" style="font-size:12px;">关闭弹窗<br>保持原有国家</div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

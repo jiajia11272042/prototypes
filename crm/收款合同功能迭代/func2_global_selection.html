@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能二 - 国家选择含GLOBAL选项</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6fa; padding: 24px; }
+  .page-header { background: #fff; border-radius: 8px; padding: 16px 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center; }
+  .page-header h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+  .page-header .breadcrumb { font-size: 13px; color: #999; }
+  .card { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card-title { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title .add-btn { font-size: 13px; font-weight: 400; color: #1890ff; cursor: pointer; border: 1px dashed #91d5ff; padding: 3px 12px; border-radius: 4px; margin-left: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #fafafa; }
+  th { padding: 10px 12px; text-align: left; color: #666; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; color: #1a1a1a; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr.active-row td { background: #f0f5ff; }
+  .field-input { border: 1px solid #d9d9d9; border-radius: 4px; padding: 5px 8px; font-size: 13px; width: 100%; min-width: 80px; }
+  .field-input:focus { outline: none; border-color: #1890ff; }
+  .dropdown-wrapper { position: relative; display: inline-block; width: 130px; }
+  .dropdown-trigger { border: 1px solid #1890ff; border-radius: 4px; padding: 5px 8px; font-size: 13px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .dropdown-menu { position: absolute; top: calc(100% + 2px); left: 0; width: 160px; background: #fff; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.14); z-index: 100; border: 1px solid #e8e8e8; overflow: hidden; }
+  .dropdown-search { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+  .dropdown-search input { width: 100%; border: 1px solid #e8e8e8; border-radius: 4px; padding: 4px 8px; font-size: 12px; outline: none; }
+  .dropdown-item { padding: 8px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; color: #1a1a1a; }
+  .dropdown-item:hover { background: #f5f5f5; }
+  .dropdown-item.special { color: #1890ff; font-weight: 500; background: #f0f5ff; border-bottom: 1px solid #e8e8e8; }
+  .dropdown-item.special:hover { background: #e6f0ff; }
+  .dropdown-item .global-tag { background: #1890ff; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 3px; }
+  .dropdown-divider { height: 1px; background: #f0f0f0; margin: 2px 0; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; }
+  .tag-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+  .action-link { color: #1890ff; cursor: pointer; font-size: 12px; }
+  .action-link.danger { color: #f5222d; }
+  .row-num { color: #999; font-size: 12px; }
+  .step-hint { font-size: 12px; color: #1890ff; background: #e6f7ff; border: 1px solid #91d5ff; border-radius: 4px; padding: 6px 12px; margin-bottom: 12px; display: inline-block; }
+</style>
+</head>
+<body>
+<div style="max-width: 1100px; margin: 0 auto;">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb">收款合同 / 合同编辑</div>
+      <h2>编辑合同 · CRM-2024-001</h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      产品信息
+      <span class="add-btn">+ 添加产品行</span>
+    </div>
+
+    <p class="step-hint">👆 点击「国家」下拉，可选择具体国家或「全球（Global）」</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:32px">#</th>
+          <th style="width:180px">包名/SKU</th>
+          <th style="width:150px">国家 <span style="color:#f5222d">*</span></th>
+          <th style="width:100px">结算方式</th>
+          <th style="width:90px">单价（USD）</th>
+          <th style="width:100px">保底金额</th>
+          <th style="width:80px">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-num">1</td>
+          <td><input class="field-input" value="com.mi.game" readonly></td>
+          <td>
+            <span class="tag tag-blue">🌍 全球（Global）</span>
+          </td>
+          <td><input class="field-input" value="CPM" readonly></td>
+          <td><input class="field-input" value="0.50" readonly></td>
+          <td><input class="field-input" value="—" readonly></td>
+          <td><span class="action-link danger">删除</span></td>
+        </tr>
+        <tr class="active-row">
+          <td class="row-num">2</td>
+          <td><input class="field-input" value="com.mi.video" readonly></td>
+          <td>
+            <!-- 展开中的下拉 -->
+            <div class="dropdown-wrapper">
+              <div class="dropdown-trigger">
+                <span>中国（CN）</span>
+                <span>▲</span>
+              </div>
+              <div class="dropdown-menu">
+                <div class="dropdown-search">
+                  <input type="text" placeholder="搜索国家...">
+                </div>
+                <div class="dropdown-item special">
+                  <span>🌍</span>
+                  <span>全球（Global）</span>
+                </div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item">🇨🇳 中国（CN）</div>
+                <div class="dropdown-item">🇺🇸 美国（US）</div>
+                <div class="dropdown-item">🇬🇧 英国（UK）</div>
+                <div class="dropdown-item">🇩🇪 德国（DE）</div>
+                <div class="dropdown-item">🇯🇵 日本（JP）</div>
+              </div>
+            </div>
+          </td>
+          <td><input class="field-input" value="CPS" readonly></td>
+          <td><input class="field-input" value="—" readonly></td>
+          <td><input class="field-input" value="5%" readonly></td>
+          <td><span class="action-link danger">删除</span></td>
+        </tr>
+        <tr>
+          <td class="row-num">3</td>
+          <td><input class="field-input" value="com.mi.video" readonly></td>
+          <td>
+            <span class="tag tag-blue">🇺🇸 美国（US）</span>
+          </td>
+          <td><input class="field-input" value="CPS" readonly></td>
+          <td><input class="field-input" value="—" readonly></td>
+          <td><input class="field-input" value="5%" readonly></td>
+          <td><span class="action-link danger">删除</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

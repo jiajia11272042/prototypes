@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能五 - 电子签主体自动填充</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6fa; padding: 24px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card { background: #fff; border-radius: 8px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card-header { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: #999; margin-bottom: 16px; }
+  .form-item { margin-bottom: 14px; }
+  .form-item label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+  .form-item label .required { color: #f5222d; }
+  .field-box { padding: 8px 12px; border-radius: 6px; font-size: 14px; border: 1px solid #d9d9d9; }
+  .field-auto { background: #e6f7ff; border-color: #91d5ff; color: #1890ff; display: flex; align-items: center; gap: 6px; }
+  .field-empty { background: #fff; color: #bfbfbf; }
+  .field-manual { background: #fff; color: #333; }
+  .auto-tag { font-size: 11px; background: #1890ff; color: #fff; border-radius: 3px; padding: 1px 5px; flex-shrink: 0; }
+  .section-note { border-radius: 6px; padding: 10px 12px; font-size: 12px; margin-bottom: 16px; }
+  .note-blue { background: #e6f7ff; border-left: 3px solid #1890ff; color: #1890ff; }
+  .note-grey { background: #fafafa; border-left: 3px solid #d9d9d9; color: #666; }
+  h2 { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .page-sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .label-before { display: inline-block; background: #fff7e6; border: 1px solid #ffd591; color: #fa8c16; border-radius: 4px; padding: 1px 7px; font-size: 12px; font-weight: 500; }
+  .label-after { display: inline-block; background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; border-radius: 4px; padding: 1px 7px; font-size: 12px; font-weight: 500; }
+</style>
+</head>
+<body>
+<div style="max-width: 1000px; margin: 0 auto;">
+  <h2>功能五 · 电子签主体自动拉取</h2>
+  <p class="page-sub">优化前 vs 优化后对比</p>
+
+  <div class="compare">
+    <!-- 优化前 -->
+    <div class="card">
+      <div class="card-header">优化前 <span class="label-before">手动填写</span></div>
+      <div class="card-sub">销售需手动输入主体名称，容易出错</div>
+      <div class="section-note note-grey">以下字段均为手动输入，无自动填充</div>
+      <div class="form-item">
+        <label>我方签署主体 <span class="required">*</span></label>
+        <div class="field-box field-empty">请输入我方签署主体名称…</div>
+      </div>
+      <div class="form-item">
+        <label>客户签署主体 <span class="required">*</span></label>
+        <div class="field-box field-empty">请输入客户签署主体名称…</div>
+      </div>
+      <div class="form-item">
+        <label>我方签署人 <span class="required">*</span></label>
+        <div class="field-box field-empty">请输入我方签署人姓名…</div>
+      </div>
+      <div class="form-item">
+        <label>客户签署人 <span class="required">*</span></label>
+        <div class="field-box field-empty">请输入客户签署人姓名…</div>
+      </div>
+    </div>
+
+    <!-- 优化后 -->
+    <div class="card">
+      <div class="card-header">优化后 <span class="label-after">系统自动填充</span></div>
+      <div class="card-sub">发起电子签时自动从合同信息拉取，可覆盖</div>
+      <div class="section-note note-blue">🔄 以下字段已根据合同信息自动填充，如需修改可直接编辑</div>
+      <div class="form-item">
+        <label>我方签署主体 <span class="required">*</span></label>
+        <div class="field-box field-auto"><span class="auto-tag">自动</span> 小米广告（深圳）有限公司</div>
+      </div>
+      <div class="form-item">
+        <label>客户签署主体 <span class="required">*</span></label>
+        <div class="field-box field-auto"><span class="auto-tag">自动</span> 某某科技有限公司</div>
+      </div>
+      <div class="form-item">
+        <label>我方签署人 <span class="required">*</span></label>
+        <div class="field-box field-manual">王小明（可修改）</div>
+      </div>
+      <div class="form-item">
+        <label>客户签署人 <span class="required">*</span></label>
+        <div class="field-box field-manual">李大华（可修改）</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
