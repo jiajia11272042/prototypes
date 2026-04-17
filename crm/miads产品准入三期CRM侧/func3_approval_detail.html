@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>审批详情 - 新增字段展示</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6fa; font-size: 13px; }
+  .page-container { padding: 20px; max-width: 900px; }
+  .breadcrumb { font-size: 12px; color: #999; margin-bottom: 16px; }
+  .breadcrumb a { color: #1677ff; text-decoration: none; }
+  .card { background: #fff; border-radius: 6px; border: 1px solid #e8e8e8; margin-bottom: 16px; overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-weight: 600; font-size: 14px; color: #1a1a1a; }
+  .card-body { padding: 16px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-item { display: flex; gap: 8px; }
+  .field-label { color: #666; min-width: 110px; flex-shrink: 0; }
+  .field-value { color: #1a1a1a; }
+  .field-value a { color: #1677ff; }
+  .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; }
+  .status-under-review { background: #e6f4ff; color: #1677ff; }
+  .new-section { border: 1px solid #ffe7ba; background: #fffbe6; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+  .new-section .card-header { background: #fff8e6; border-bottom: 1px solid #ffe7ba; }
+  .new-section .card-title::before { content: "🆕 "; }
+  .new-field-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #fff3cd; }
+  .new-field-item:last-child { border-bottom: none; }
+  .new-field-label { color: #876800; min-width: 110px; flex-shrink: 0; font-weight: 500; }
+  .new-field-value { color: #1a1a1a; word-break: break-all; }
+  .dash { color: #bbb; }
+  .section-tag { font-size: 10px; background: #ff7a00; color: #fff; padding: 1px 5px; border-radius: 3px; margin-left: 6px; }
+  .approval-step { display: flex; align-items: center; gap: 0; margin: 4px 0; }
+  .step-node { display: flex; flex-direction: column; align-items: center; }
+  .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 600; }
+  .step-active { background: #1677ff; }
+  .step-done { background: #52c41a; }
+  .step-pending { background: #d9d9d9; }
+  .step-line { width: 60px; height: 2px; background: #d9d9d9; }
+  .step-line.done { background: #52c41a; }
+  .step-label { font-size: 11px; color: #666; margin-top: 4px; text-align: center; }
+  .btn { height: 32px; padding: 0 16px; border-radius: 4px; cursor: pointer; font-size: 12px; border: none; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-danger { background: #fff; color: #ff4d4f; border: 1px solid #ff4d4f; }
+</style>
+</head>
+<body>
+<div class="page-container">
+  <div class="breadcrumb">
+    <a href="#">审批管理</a> / <a href="#">产品审批</a> / 产品审批详情
+  </div>
+
+  <!-- 基础信息 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">基础信息</span>
+      <span class="status-badge status-under-review">审批中</span>
+    </div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field-item"><span class="field-label">产品名称：</span><span class="field-value">LoanPro</span></div>
+        <div class="field-item"><span class="field-label">包名：</span><span class="field-value">com.example.loanpro</span></div>
+        <div class="field-item"><span class="field-label">产品类型：</span><span class="field-value">APP</span></div>
+        <div class="field-item"><span class="field-label">账户 ID：</span><span class="field-value">ACC-20240815-001</span></div>
+        <div class="field-item"><span class="field-label">风险行业：</span><span class="field-value">消费金融（高风险）</span></div>
+        <div class="field-item"><span class="field-label">目标国家：</span><span class="field-value">IN, ID</span></div>
+        <div class="field-item"><span class="field-label">H5 域名：</span><span class="field-value">loanpro.example.com</span></div>
+        <div class="field-item"><span class="field-label">申报品类：</span><span class="field-value">消费金融</span></div>
+        <!-- 新增字段 -->
+        <div class="field-item"><span class="field-label" style="color:#876800;font-weight:500">真实品类 🆕：</span><span class="field-value">消费金融</span></div>
+        <div class="field-item" style="grid-column: span 2"><span class="field-label" style="color:#876800;font-weight:500">实际落地页 URL 🆕：</span><span class="field-value"><a href="#">https://loanpro.example.com/landing?utm_source=miads&amp;campaign=in_q2&amp;medium=banner</a></span></div>
+        <div class="field-item"><span class="field-label">提交时间：</span><span class="field-value">2026-04-14 10:23</span></div>
+        <div class="field-item"><span class="field-label">Review ID：</span><span class="field-value">REV-20260414-0023</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增：联系人区块 -->
+  <div class="new-section">
+    <div class="card-header">
+      <span class="card-title">联系人信息 <span class="section-tag">NEW</span></span>
+    </div>
+    <div class="card-body">
+      <div class="new-field-item">
+        <span class="new-field-label">销售姓名：</span>
+        <span class="new-field-value">Zhang Wei</span>
+      </div>
+      <div class="new-field-item">
+        <span class="new-field-label">销售邮箱：</span>
+        <span class="new-field-value"><a href="mailto:zhangwei@example.com" style="color:#1677ff">zhangwei@example.com</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审批进度 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">审批进度</span>
+    </div>
+    <div class="card-body" style="display:flex;align-items:flex-start;gap:0;padding:16px 24px;">
+      <div class="step-node">
+        <div class="step-circle step-done">✓</div>
+        <div class="step-label">LLC 审核<br>已完成</div>
+      </div>
+      <div class="step-line done" style="margin-top:15px"></div>
+      <div class="step-node">
+        <div class="step-circle step-active">2</div>
+        <div class="step-label">法务审核<br>进行中</div>
+      </div>
+      <div class="step-line" style="margin-top:15px"></div>
+      <div class="step-node">
+        <div class="step-circle step-pending">3</div>
+        <div class="step-label">RSA 审核<br>待处理</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作区 -->
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;">
+    <button class="btn" style="background:#fff;border:1px solid #d9d9d9;color:#666;">返回</button>
+    <button class="btn btn-danger">拒绝</button>
+    <button class="btn btn-primary">通过</button>
+  </div>
+</div>
+</body>
+</html>

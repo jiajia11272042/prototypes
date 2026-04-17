@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>LLC 附件上传区块</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6fa; font-size: 13px; }
+  .page-container { padding: 20px; max-width: 860px; }
+  .card { background: #fff; border-radius: 6px; border: 1px solid #e8e8e8; margin-bottom: 16px; overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-weight: 600; font-size: 14px; color: #1a1a1a; }
+  .card-body { padding: 16px; }
+  .new-section { border: 1px solid #91caff; background: #e6f4ff; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+  .new-section .card-header { background: #dbeeff; border-bottom: 1px solid #91caff; }
+  .section-tag { font-size: 10px; background: #1677ff; color: #fff; padding: 1px 5px; border-radius: 3px; margin-left: 6px; }
+  .upload-zone { border: 2px dashed #91caff; border-radius: 6px; padding: 24px; text-align: center; background: #fff; cursor: pointer; transition: border-color 0.2s; margin-bottom: 14px; }
+  .upload-zone:hover { border-color: #1677ff; background: #f0f8ff; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-hint { color: #666; font-size: 12px; margin-top: 4px; }
+  .upload-limit { color: #999; font-size: 11px; margin-top: 4px; }
+  .file-list { display: flex; flex-direction: column; gap: 8px; }
+  .file-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f9f9f9; border-radius: 4px; border: 1px solid #f0f0f0; }
+  .file-icon { font-size: 20px; flex-shrink: 0; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 12px; font-weight: 500; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-meta { font-size: 11px; color: #999; margin-top: 2px; }
+  .file-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-link { background: none; border: none; color: #1677ff; cursor: pointer; font-size: 12px; padding: 0; }
+  .btn-danger-link { background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 12px; padding: 0; }
+  .role-note { font-size: 11px; color: #666; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 3px; padding: 4px 10px; margin-bottom: 12px; }
+  .perm-table { font-size: 11px; }
+  .perm-table table { width: 100%; border-collapse: collapse; }
+  .perm-table th { padding: 6px 10px; background: #f5f5f5; border: 1px solid #f0f0f0; color: #666; }
+  .perm-table td { padding: 5px 10px; border: 1px solid #f0f0f0; text-align: center; }
+  .yes { color: #52c41a; font-weight: bold; }
+  .no { color: #bbb; }
+  .upload-count { font-size: 11px; color: #666; margin-bottom: 10px; }
+  .progress-bar { height: 4px; background: #e8e8e8; border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; background: #1677ff; border-radius: 2px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div class="page-container">
+
+  <!-- 基础信息卡片（简化） -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">基础信息</span>
+      <span style="font-size:12px;background:#e6f4ff;color:#1677ff;padding:2px 10px;border-radius:10px">审批中</span>
+    </div>
+    <div class="card-body" style="color:#666;font-size:12px">
+      产品：<strong>LoanPro</strong>　包名：com.example.loanpro　Review ID：REV-20260414-0023　当前节点：<strong>LLC 审核</strong>
+    </div>
+  </div>
+
+  <!-- 新增：参考附件区块（LLC 视角，有上传权限） -->
+  <div class="new-section">
+    <div class="card-header">
+      <span class="card-title">参考附件 <span class="section-tag">NEW</span></span>
+      <span style="font-size:11px;color:#1677ff">当前角色：LLC（可上传/删除）</span>
+    </div>
+    <div class="card-body">
+
+      <div class="role-note">
+        ⚠️ 附件仅在审批进行中时可操作，审批结束后本区块自动隐藏。销售角色不可见此区块。
+      </div>
+
+      <div class="upload-count">已上传 2 / 最多 10 个附件</div>
+
+      <!-- 已上传文件列表 -->
+      <div class="file-list" style="margin-bottom:14px">
+        <div class="file-item">
+          <div class="file-icon">📄</div>
+          <div class="file-info">
+            <div class="file-name">合规评估报告_LoanPro_2026Q1.pdf</div>
+            <div class="file-meta">2.4 MB · 由 LLC_reviewer1 上传 · 2026-04-14 11:30</div>
+          </div>
+          <div class="file-actions">
+            <button class="btn-link">下载</button>
+            <button class="btn-danger-link">删除</button>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon">📊</div>
+          <div class="file-info">
+            <div class="file-name">用户协议_英文版.docx</div>
+            <div class="file-meta">856 KB · 由 LLC_reviewer1 上传 · 2026-04-14 11:35</div>
+          </div>
+          <div class="file-actions">
+            <button class="btn-link">下载</button>
+            <button class="btn-danger-link">删除</button>
+          </div>
+        </div>
+        <!-- 上传中状态 -->
+        <div class="file-item" style="background:#f0f8ff;border-color:#91caff">
+          <div class="file-icon">📎</div>
+          <div class="file-info">
+            <div class="file-name">风险说明材料_v2.pdf</div>
+            <div class="file-meta" style="color:#1677ff">上传中…（65%）</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+          </div>
+          <div class="file-actions">
+            <button class="btn-danger-link">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 上传区域 -->
+      <div class="upload-zone" onclick="alert('选择文件（演示）')">
+        <div class="upload-icon">☁️</div>
+        <div style="color:#1677ff;font-size:13px;font-weight:500">点击或拖拽文件到此处上传</div>
+        <div class="upload-limit">支持 PDF / Word / Excel / 图片（jpg, png, gif）· 单文件最大 20MB</div>
+      </div>
+
+      <!-- 权限说明 -->
+      <div style="margin-top:10px">
+        <div style="font-size:11px;color:#999;margin-bottom:6px">各角色权限说明：</div>
+        <div class="perm-table">
+          <table>
+            <tr>
+              <th>角色</th><th>上传</th><th>删除</th><th>查看</th>
+            </tr>
+            <tr>
+              <td>LLC</td>
+              <td class="yes">✓</td>
+              <td class="yes">✓（仅自己上传）</td>
+              <td class="yes">✓</td>
+            </tr>
+            <tr>
+              <td>法务</td>
+              <td class="no">-</td>
+              <td class="no">-</td>
+              <td class="yes">✓</td>
+            </tr>
+            <tr>
+              <td>RSA</td>
+              <td class="no">-</td>
+              <td class="no">-</td>
+              <td class="yes">✓</td>
+            </tr>
+            <tr>
+              <td>销管</td>
+              <td class="no">-</td>
+              <td class="no">-</td>
+              <td class="yes">✓</td>
+            </tr>
+            <tr>
+              <td>销售</td>
+              <td class="no">-</td>
+              <td class="no">-</td>
+              <td class="no">区块不渲染</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
