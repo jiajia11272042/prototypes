@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能7 - 审批时历史品类风险提示</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6f7; padding: 24px; min-height: 100vh; }
+  .page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; }
+  .detail-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 20px; max-width: 800px; }
+  .section-title { font-size: 14px; font-weight: 600; color: #555; margin-bottom: 12px; border-left: 3px solid #1677ff; padding-left: 8px; }
+  .field-row { display: flex; margin-bottom: 10px; font-size: 13px; }
+  .field-label { width: 150px; color: #888; flex-shrink: 0; }
+  .field-value { color: #1a1a1a; flex: 1; }
+  .divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+
+  /* 历史品类提示区域 */
+  .history-hint { margin: 0 0 16px 0; border: 1.5px solid #faad14; border-radius: 8px; background: #fffbe6; padding: 12px 16px; }
+  .history-hint-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .history-hint-header .icon { font-size: 15px; }
+  .history-hint-header .title { font-size: 13px; font-weight: 600; color: #874d00; }
+  .history-hint-header .badge { background: #faad14; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 10px; }
+  .history-hint-desc { font-size: 12px; color: #7c4a00; line-height: 1.6; }
+  .history-hint-desc strong { color: #d46b08; }
+
+  /* 无历史记录状态 */
+  .history-hint.no-record { border-color: #d9d9d9; background: #fafafa; }
+  .history-hint.no-record .history-hint-header .icon { color: #888; }
+  .history-hint.no-record .history-hint-header .title { color: #888; }
+  .history-hint.no-record .history-hint-desc { color: #aaa; }
+
+  /* 一致提示 */
+  .history-hint.match { border-color: #52c41a; background: #f6ffed; }
+  .history-hint.match .history-hint-header .title { color: #135200; }
+  .history-hint.match .badge { background: #52c41a; }
+  .history-hint.match .history-hint-desc { color: #135200; }
+
+  /* 修改审批结果区域 */
+  .review-section { margin-top: 16px; }
+  .form-label { font-size: 13px; color: #555; margin-bottom: 6px; display: block; }
+  .form-label span.required { color: #ff4d4f; margin-left: 2px; }
+  .select-wrapper { position: relative; display: flex; align-items: center; gap: 8px; }
+  .select-box { flex: 1; border: 1px solid #d9d9d9; border-radius: 6px; padding: 7px 32px 7px 10px; font-size: 13px; color: #1a1a1a; background: #fff; cursor: pointer; appearance: none; }
+  .select-box:focus { border-color: #1677ff; outline: none; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  .select-arrow { position: absolute; right: 20px; color: #888; pointer-events: none; font-size: 12px; }
+
+  /* 底部按钮 */
+  .footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .btn { padding: 7px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .btn-cancel { background: #fff; border: 1px solid #d9d9d9; color: #555; }
+  .btn-submit { background: #1677ff; border: none; color: #fff; }
+  .btn-submit:hover { background: #0958d9; }
+
+  /* 场景切换 */
+  .scenario-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .scenario-btn { padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1.5px solid #d9d9d9; background: #fff; color: #555; transition: all 0.2s; }
+  .scenario-btn.active { border-color: #1677ff; background: #e6f4ff; color: #1677ff; font-weight: 600; }
+
+  .badge-info { background: #e6f4ff; color: #1677ff; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="page-title">功能7：审批时历史品类风险提示 — 原型演示</div>
+
+<div class="scenario-bar">
+  <button class="scenario-btn active" onclick="showScenario('mismatch')">场景A：历史品类与当前不同</button>
+  <button class="scenario-btn" onclick="showScenario('match')">场景B：历史品类与当前一致</button>
+  <button class="scenario-btn" onclick="showScenario('norecord')">场景C：无历史通过记录</button>
+</div>
+
+<div class="detail-card">
+  <div class="section-title">基础信息</div>
+  <div class="field-row"><span class="field-label">包名</span><span class="field-value">com.taxsee.taxsee</span></div>
+  <div class="field-row"><span class="field-label">广告主账号 ID</span><span class="field-value">ADV-20241082</span></div>
+  <div class="field-row"><span class="field-label">真实品类</span><span class="field-value">Financial Services - Tax</span></div>
+  <div class="field-row"><span class="field-label">实际落地页 URL</span><span class="field-value">https://app.taxsee.com/lp/tax-return-2024</span></div>
+  <div class="divider"></div>
+
+  <div class="section-title">修改审批结果</div>
+  <div class="review-section">
+
+    <!-- 场景A：历史品类与当前不同（默认显示） -->
+    <div id="hint-mismatch">
+      <div class="history-hint">
+        <div class="history-hint-header">
+          <span class="icon">⚠️</span>
+          <span class="title">历史审批记录提示</span>
+          <span class="badge">有差异</span>
+        </div>
+        <div class="history-hint-desc">
+          该包名历史最近通过审批行业：<strong>金融服务 - 银行理财（ID: 12）</strong>（通过时间：2024-08-15）<br>
+          当前选择行业与历史不一致，请确认是否为正常变更。
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景B：历史品类与当前一致 -->
+    <div id="hint-match" style="display:none">
+      <div class="history-hint match">
+        <div class="history-hint-header">
+          <span class="icon">✅</span>
+          <span class="title">历史审批记录提示</span>
+          <span class="badge">一致</span>
+        </div>
+        <div class="history-hint-desc">
+          该包名历史最近通过审批行业：<strong>金融服务 - 税务服务（ID: 15）</strong>（通过时间：2024-08-15）<br>
+          与当前选择一致。
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景C：无历史记录 -->
+    <div id="hint-norecord" style="display:none">
+      <!-- 无历史记录时不显示提示区域（符合PRD：无记录→不显示提示） -->
+    </div>
+
+    <label class="form-label">风险行业 <span class="required">*</span></label>
+    <div class="select-wrapper">
+      <select class="select-box" id="risk-select" onchange="onRiskChange()">
+        <option value="">请选择风险行业</option>
+        <option value="12">金融服务 - 银行理财</option>
+        <option value="15" selected>金融服务 - 税务服务</option>
+        <option value="18">金融服务 - 投资理财</option>
+        <option value="22">医疗健康 - 保健品</option>
+        <option value="30">游戏娱乐</option>
+      </select>
+      <span class="select-arrow">▾</span>
+    </div>
+
+    <div style="margin-top: 10px;">
+      <label class="form-label">审批结论</label>
+      <div style="display:flex; gap: 16px; margin-top: 4px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="result" value="approve" checked> 通过
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+          <input type="radio" name="result" value="reject"> 拒绝
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="btn btn-cancel">取消</button>
+    <button class="btn btn-submit">确认提交</button>
+  </div>
+</div>
+
+<script>
+function showScenario(s) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('hint-mismatch').style.display = s === 'mismatch' ? '' : 'none';
+  document.getElementById('hint-match').style.display = s === 'match' ? '' : 'none';
+  document.getElementById('hint-norecord').style.display = s === 'norecord' ? '' : 'none';
+  // Update select to match scenario
+  if (s === 'match') document.getElementById('risk-select').value = '15';
+  else if (s === 'mismatch') document.getElementById('risk-select').value = '18';
+  else document.getElementById('risk-select').value = '';
+}
+function onRiskChange() {
+  const sel = document.getElementById('risk-select').value;
+  // Simulate: 15 = matches history, others = mismatch
+  if (sel === '15') showScenario('match');
+  else if (sel) showScenario('mismatch');
+  else showScenario('norecord');
+}
+</script>
+</body>
+</html>
