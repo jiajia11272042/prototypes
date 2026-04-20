@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能三 - 必填项优化（Miads业务线）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+  body { background: #f5f6fa; padding: 24px; }
+  .page-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; }
+  .section { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .section-title { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; display: inline-block; width: 4px; height: 16px; background: #1677ff; border-radius: 2px; }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 24px; }
+  .form-item { display: flex; flex-direction: column; gap: 6px; }
+  .form-item label { font-size: 13px; color: #555; display: flex; align-items: center; gap: 4px; }
+  .form-item label .required { color: #ff4d4f; font-size: 13px; }
+  .form-item label .optional { color: #999; font-size: 12px; }
+  .form-item label .new-tag { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; border-radius: 3px; font-size: 11px; padding: 0 5px; }
+  .form-control { border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #333; background: #fff; }
+  .form-control.required-active { border-color: #1677ff; }
+  .form-control.disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+  .form-control.optional-field { border-style: dashed; border-color: #bbb; color: #999; }
+  .select-control { display: flex; align-items: center; justify-content: space-between; }
+  .select-control::after { content: '▾'; color: #999; }
+  .form-item .hint { font-size: 12px; color: #999; margin-top: 2px; }
+  .form-item .error-hint { font-size: 12px; color: #ff4d4f; margin-top: 2px; }
+
+  /* 切换开关展示区 */
+  .toggle-bar { background: #f0f7ff; border: 1.5px solid #91caff; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
+  .toggle-bar .toggle-label { font-size: 13px; font-weight: 600; color: #1677ff; }
+  .toggle-group { display: flex; gap: 0; border: 1px solid #1677ff; border-radius: 6px; overflow: hidden; }
+  .toggle-btn { padding: 6px 18px; font-size: 13px; cursor: pointer; background: #fff; color: #1677ff; border: none; transition: background 0.2s; }
+  .toggle-btn.active { background: #1677ff; color: #fff; }
+
+  /* 状态标签 */
+  .status-tag { display: inline-block; border-radius: 4px; font-size: 12px; padding: 2px 8px; font-weight: 600; }
+  .tag-required { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+  .tag-optional { background: #f5f5f5; color: #999; border: 1px solid #e0e0e0; }
+  .tag-conditional { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+  .tag-new { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+
+  /* 折叠展示 */
+  .collapse-section { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+  .collapse-header { background: #fafafa; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; font-weight: 600; color: #333; }
+  .collapse-body { padding: 16px 18px; border-top: 1px solid #e0e0e0; }
+
+  /* 警告框 */
+  .alert-box { background: #fffbe6; border: 1.5px solid #ffe58f; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #7c4a00; }
+  .alert-box.info { background: #e6f4ff; border-color: #91caff; color: #003a8c; }
+
+  /* 状态对比表 */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  .compare-table th, .compare-table td { border: 1px solid #e0e0e0; padding: 10px 14px; text-align: left; }
+  .compare-table th { background: #f5f7fa; font-weight: 600; color: #555; }
+  .compare-table td.field-name { font-weight: 600; color: #1a1a1a; }
+  .compare-table tr:hover td { background: #f9fbff; }
+
+  /* 状态指示点 */
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot-red { background: #ff4d4f; }
+  .dot-gray { background: #bbb; }
+  .dot-orange { background: #fa8c16; }
+  .dot-blue { background: #1677ff; }
+
+  .w2 { grid-column: span 2; }
+  .divider { grid-column: span 3; border: none; border-top: 1px solid #f0f0f0; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="page-title">功能三 · 必填项优化 — Miads 业务线原型</div>
+
+<!-- 业务线选择 -->
+<div class="section">
+  <div class="section-title">业务线信息</div>
+  <div class="form-grid">
+    <div class="form-item">
+      <label><span class="required">*</span> 三级业务线</label>
+      <div class="form-control select-control">广告-MiAds（已选）</div>
+    </div>
+    <div class="form-item">
+      <label>二级业务线</label>
+      <div class="form-control disabled">广告</div>
+    </div>
+    <div class="form-item">
+      <label>一级业务线</label>
+      <div class="form-control disabled">国际广告</div>
+    </div>
+  </div>
+</div>
+
+<!-- 核心问题提示 -->
+<div class="alert-box info">
+  ⚠️ <strong>待确认：Miads 代理/直客 区分方式</strong>——当前合同表单中无该字段，下方原型提供两种方案供参考，需产品确认选哪种。
+</div>
+
+<!-- 方案A: 新增客户类型字段 -->
+<div class="collapse-section">
+  <div class="collapse-header" onclick="toggleA(this)">
+    <span>方案 A：在合同表单中新增「客户类型」字段（推荐）</span>
+    <span id="arrowA">▾</span>
+  </div>
+  <div class="collapse-body" id="bodyA">
+    <!-- 切换演示 -->
+    <div class="toggle-bar">
+      <span class="toggle-label">客户类型</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" onclick="switchType('direct')">直客</button>
+        <button class="toggle-btn" onclick="switchType('agent')">代理</button>
+      </div>
+      <span id="type-hint" style="font-size:12px;color:#1677ff;">当前：直客 → 客户相关字段全部必填</span>
+    </div>
+
+    <!-- MiAds 保底信息（所有类型均必填） -->
+    <div class="form-grid" style="margin-bottom:16px;">
+      <div class="form-item">
+        <label>
+          <span class="required">*</span> 是否有保底
+          <span class="new-tag">新增必填</span>
+        </label>
+        <div class="form-control select-control">请选择</div>
+        <span class="hint">原：非必填 → 现：所有业务线必填</span>
+      </div>
+      <div class="form-item" id="guaranteeAmountItem" style="display:none;">
+        <label>
+          <span class="required">*</span> 保底金额
+          <span class="status-tag tag-conditional">有保底时必填</span>
+        </label>
+        <div class="form-control">请输入</div>
+        <span class="hint">是否有保底 = 是时出现且必填</span>
+      </div>
+      <div class="form-item">
+        <label>
+          <span class="required">*</span> 客户类型
+          <span class="new-tag">新增字段</span>
+        </label>
+        <div class="form-control select-control" id="customerTypeControl">直客</div>
+        <span class="hint">区分代理/直客，影响签约方字段必填规则</span>
+      </div>
+    </div>
+
+    <!-- 签约方信息（随客户类型变化） -->
+    <div class="section-title" style="font-size:13px;color:#555;margin-bottom:12px;">签约方信息（根据客户类型联动）</div>
+    <div class="form-grid">
+      <div class="form-item" id="customerIdItem">
+        <label>
+          <span class="required" id="customerIdReq">*</span> 客户ID
+          <span class="status-tag" id="customerIdTag" style="">直客必填</span>
+        </label>
+        <div class="form-control required-active" id="customerIdCtrl">请输入</div>
+      </div>
+      <div class="form-item">
+        <label>
+          <span class="required" id="companyNameReq">*</span> 客户公司名称
+          <span class="status-tag" id="companyNameTag" style="">直客只读，自动匹配</span>
+        </label>
+        <div class="form-control disabled" id="companyNameCtrl">自动填充</div>
+      </div>
+      <div class="form-item">
+        <label>
+          <span class="required" id="regPlaceReq">*</span> 客户注册地
+          <span class="status-tag" id="regPlaceTag" style="">直客只读，自动匹配</span>
+        </label>
+        <div class="form-control disabled" id="regPlaceCtrl">自动填充</div>
+      </div>
+      <div class="form-item">
+        <label>
+          <span class="required" id="customerSourceReq">*</span> 客户来源
+          <span class="status-tag" id="customerSourceTag" style="">直客只读，自动匹配</span>
+        </label>
+        <div class="form-control disabled" id="customerSourceCtrl">自动填充</div>
+      </div>
+      <div class="form-item">
+        <label>
+          <span class="required" id="salesNameReq">*</span> 销售名称
+          <span class="status-tag" id="salesNameTag" style="">直客只读，自动匹配</span>
+        </label>
+        <div class="form-control disabled" id="salesNameCtrl">自动填充</div>
+      </div>
+      <div class="form-item">
+        <label>集团公司名称</label>
+        <div class="form-control disabled">自动填充</div>
+      </div>
+    </div>
+
+    <!-- 当前代理状态提示 -->
+    <div class="alert-box" id="agentAlert" style="display:none;margin-top:12px;">
+      当前为「代理」类型：客户ID、客户公司名称、客户注册地、客户来源、销售名称 均为<strong>非必填</strong>，可空白提交
+    </div>
+  </div>
+</div>
+
+<!-- 方案B说明 -->
+<div class="collapse-section" style="border-color:#ffd591;">
+  <div class="collapse-header" style="background:#fff7e6;" onclick="toggleB(this)">
+    <span style="color:#d46b08;">方案 B：通过 MiAds ID 是否填写来推断（不新增字段）</span>
+    <span id="arrowB">▾</span>
+  </div>
+  <div class="collapse-body" id="bodyB" style="display:none;">
+    <div class="alert-box">
+      逻辑：MiAds ID 有值 = 直客；为空 = 代理。客户字段必填由 MiAds ID 是否有值联动。
+      <br><br><strong>风险</strong>：MiAds ID 本身是可选字段，当前无必填要求，以此推断代理/直客逻辑不严谨，可能出现"漏填 MiAds ID 的直客被误判为代理"的情况。
+    </div>
+  </div>
+</div>
+
+<!-- 分隔 -->
+<div style="height:8px;"></div>
+
+<!-- 非 Miads 业务线对比 -->
+<div class="section">
+  <div class="section-title">各业务线 必填项变更汇总</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>字段</th>
+        <th>当前状态</th>
+        <th>非Miads业务线</th>
+        <th>Miads-直客</th>
+        <th>Miads-代理</th>
+        <th>搜索海外/预装海外等其他</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="field-name">是否有保底<br><code style="font-size:11px;">hasGuarantee</code></td>
+        <td><span class="dot dot-gray"></span>字段存在，非必填</td>
+        <td><span class="dot dot-red"></span><span class="status-tag tag-required">必填</span></td>
+        <td><span class="dot dot-red"></span><span class="status-tag tag-required">必填</span></td>
+        <td><span class="dot dot-red"></span><span class="status-tag tag-required">必填</span></td>
+        <td><span class="dot dot-red"></span><span class="status-tag tag-required">必填</span></td>
+      </tr>
+      <tr>
+        <td class="field-name">保底金额<br><code style="font-size:11px;">guaranteeAmount</code></td>
+        <td><span class="dot dot-gray"></span>字段存在，非必填</td>
+        <td><span class="status-tag tag-conditional">有保底=是时必填</span></td>
+        <td><span class="status-tag tag-conditional">有保底=是时必填</span></td>
+        <td><span class="status-tag tag-conditional">有保底=是时必填</span></td>
+        <td><span class="status-tag tag-conditional">有保底=是时必填</span></td>
+      </tr>
+      <tr>
+        <td class="field-name">客户ID<br><code style="font-size:11px;">customerId</code></td>
+        <td><span class="dot dot-red"></span>必填（roleId 8/9 除外）</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-gray"></span><span class="status-tag tag-optional">非必填</span></td>
+        <td><span class="dot dot-red"></span>必填</td>
+      </tr>
+      <tr>
+        <td class="field-name">客户公司名称<br><code style="font-size:11px;">customerCompanyName</code></td>
+        <td><span class="dot dot-red"></span>必填，只读（自动匹配）</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-gray"></span><span class="status-tag tag-optional">非必填</span></td>
+        <td><span class="dot dot-red"></span>必填</td>
+      </tr>
+      <tr>
+        <td class="field-name">客户注册地<br><code style="font-size:11px;">customerRegistrationPlace</code></td>
+        <td><span class="dot dot-red"></span>必填，只读（自动匹配）</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-gray"></span><span class="status-tag tag-optional">非必填</span></td>
+        <td><span class="dot dot-red"></span>必填</td>
+      </tr>
+      <tr>
+        <td class="field-name">客户来源<br><code style="font-size:11px;">customerSource</code></td>
+        <td><span class="dot dot-red"></span>必填，只读（自动匹配）</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-gray"></span><span class="status-tag tag-optional">非必填</span></td>
+        <td><span class="dot dot-red"></span>必填</td>
+      </tr>
+      <tr>
+        <td class="field-name">销售名称<br><code style="font-size:11px;">performanceDivisions.userId</code></td>
+        <td><span class="dot dot-red"></span>必填（业绩划分中）</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-red"></span>必填</td>
+        <td><span class="dot dot-gray"></span><span class="status-tag tag-optional">非必填</span></td>
+        <td><span class="dot dot-red"></span>必填</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="alert-box info" style="margin-top:12px; font-size:12px;">
+    <strong>注：</strong>「其他业务线」（搜索海外/预装海外/云端预装/游戏发行等）当前无代理/直客区分，统一按必填处理。
+  </div>
+</div>
+
+<script>
+  function toggleA(header) {
+    var body = document.getElementById('bodyA');
+    var arrow = document.getElementById('arrowA');
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    arrow.textContent = body.style.display === 'none' ? '▸' : '▾';
+  }
+  function toggleB(header) {
+    var body = document.getElementById('bodyB');
+    var arrow = document.getElementById('arrowB');
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    arrow.textContent = body.style.display === 'none' ? '▸' : '▾';
+  }
+
+  function switchType(type) {
+    var btns = document.querySelectorAll('.toggle-btn');
+    btns[0].classList.toggle('active', type === 'direct');
+    btns[1].classList.toggle('active', type === 'agent');
+
+    var hint = document.getElementById('type-hint');
+    var agentAlert = document.getElementById('agentAlert');
+
+    var fields = ['customerId', 'companyName', 'regPlace', 'customerSource', 'salesName'];
+    var fieldLabels = {
+      'customerId': ['直客必填', '代理非必填'],
+      'companyName': ['直客只读，自动匹配', '代理非必填'],
+      'regPlace': ['直客只读，自动匹配', '代理非必填'],
+      'customerSource': ['直客只读，自动匹配', '代理非必填'],
+      'salesName': ['直客只读，自动匹配', '代理非必填']
+    };
+
+    if (type === 'direct') {
+      hint.textContent = '当前：直客 → 客户相关字段全部必填';
+      agentAlert.style.display = 'none';
+      fields.forEach(function(f) {
+        var req = document.getElementById(f + 'Req');
+        var tag = document.getElementById(f + 'Tag');
+        var ctrl = document.getElementById(f + 'Ctrl');
+        if (req) req.style.display = 'inline';
+        if (tag) { tag.textContent = fieldLabels[f][0]; tag.className = 'status-tag tag-required'; }
+        if (ctrl) { ctrl.className = 'form-control disabled'; }
+      });
+      document.getElementById('customerIdCtrl').className = 'form-control required-active';
+    } else {
+      hint.textContent = '当前：代理 → 客户相关字段均非必填';
+      agentAlert.style.display = 'block';
+      fields.forEach(function(f) {
+        var req = document.getElementById(f + 'Req');
+        var tag = document.getElementById(f + 'Tag');
+        var ctrl = document.getElementById(f + 'Ctrl');
+        if (req) req.style.color = '#999';
+        if (tag) { tag.textContent = fieldLabels[f][1]; tag.className = 'status-tag tag-optional'; }
+        if (ctrl) { ctrl.className = 'form-control optional-field'; }
+      });
+      document.getElementById('customerIdCtrl').className = 'form-control optional-field';
+    }
+    // Reset req color for direct
+    if (type === 'direct') {
+      fields.forEach(function(f) {
+        var req = document.getElementById(f + 'Req');
+        if (req) req.style.color = '#ff4d4f';
+      });
+    }
+  }
+
+  // hasGuarantee interaction
+  document.addEventListener('DOMContentLoaded', function() {
+    var guaranteeSelect = document.querySelector('[id] .select-control');
+  });
+
+  // Show guarantee amount when has_guarantee is clicked
+  function showGuaranteeAmount() {
+    document.getElementById('guaranteeAmountItem').style.display = 'flex';
+  }
+</script>
+</body>
+</html>
