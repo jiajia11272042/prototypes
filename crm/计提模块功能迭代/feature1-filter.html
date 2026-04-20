@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能一 — 计提筛选区新增媒体、审核状态</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'PingFang SC', Arial, sans-serif; font-size: 13px; background: #f0f2f5; }
+  .page-header { background: #fff; padding: 14px 20px; border-bottom: 1px solid #e8e8e8; font-size: 16px; font-weight: 500; color: #262626; }
+  .page-content { padding: 16px; }
+  .card { background: #fff; border-radius: 4px; padding: 16px; margin-bottom: 12px; border: 1px solid #e8e8e8; }
+  .filter-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+  .form-item { display: flex; flex-direction: column; }
+  .form-item label { font-size: 12px; color: #8c8c8c; margin-bottom: 4px; }
+  .el-input, .el-select, .el-select-multi { height: 30px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #262626; background: #fff; cursor: pointer; display: flex; align-items: center; min-width: 150px; position: relative; }
+  .el-select { justify-content: space-between; }
+  .el-select .arrow { color: #bfbfbf; font-size: 11px; }
+  .el-select-multi { min-width: 180px; background: #fff; }
+  .new-badge { display: inline-block; background: #ff4d4f; color: #fff; font-size: 10px; padding: 0 4px; border-radius: 2px; margin-left: 4px; vertical-align: middle; }
+  .btn-group { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
+  .btn { height: 30px; padding: 0 14px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-default { background: #fff; color: #262626; border: 1px solid #d9d9d9; }
+  .divider { border-top: 1px solid #f0f0f0; margin: 12px 0; }
+  .op-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #fafafa; color: #595959; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; color: #262626; white-space: nowrap; }
+  tr:hover td { background: #fafafa; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 11px; }
+  .tag-blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+  .tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .tag-red { background: #fff1f0; color: #ff4d4f; border: 1px solid #ffa39e; }
+  .new-col-header { color: #1677ff; font-weight: 600; }
+
+  /* Dropdown */
+  .dropdown-wrap { position: relative; display: inline-block; }
+  .dropdown-menu { position: absolute; top: 32px; left: 0; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,.12); z-index: 100; min-width: 160px; padding: 4px 0; display: none; }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item { padding: 7px 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .dropdown-item:hover { background: #f5f5f5; }
+  .dropdown-item.selected { color: #1677ff; }
+  .checkbox-icon { width: 14px; height: 14px; border: 1.5px solid #d9d9d9; border-radius: 2px; display: inline-block; }
+  .checkbox-icon.checked { background: #1677ff; border-color: #1677ff; position: relative; }
+  .checkbox-icon.checked::after { content: '✓'; position: absolute; top: -2px; left: 1px; color: #fff; font-size: 11px; }
+  .tag-count { display: inline-block; background: #1677ff; color: #fff; border-radius: 10px; padding: 0 6px; font-size: 11px; margin-left: 4px; }
+
+  /* Notice */
+  .notice { background: #fffbe6; border: 1px solid #ffe58f; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #7c4e00; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="page-header">计提管理</div>
+<div class="page-content">
+  <div class="notice">💡 功能一演示：筛选区新增「媒体」（多选）和「审核状态」（单选）两个筛选项</div>
+  <div class="card">
+    <div class="filter-form">
+      <div class="form-item">
+        <label>合同编号</label>
+        <div class="el-input">请输入合同编号</div>
+      </div>
+      <div class="form-item">
+        <label>结算月份</label>
+        <div class="el-input">开始月份 - 结束月份</div>
+      </div>
+      <div class="form-item">
+        <label>推送状态</label>
+        <div class="el-select" onclick="">全部 <span class="arrow">▾</span></div>
+      </div>
+      <div class="form-item">
+        <label>主体</label>
+        <div class="el-select">请选择主体 <span class="arrow">▾</span></div>
+      </div>
+      <div class="form-item">
+        <label>计提月份</label>
+        <div class="el-input">开始月份 - 结束月份</div>
+      </div>
+      <!-- 新增：媒体（多选） -->
+      <div class="form-item dropdown-wrap">
+        <label>媒体 <span class="new-badge">新</span></label>
+        <div class="el-select-multi" id="mediaSelect" onclick="toggleMedia()">
+          <span id="mediaPlaceholder">请选择媒体</span>
+          <span class="arrow">▾</span>
+        </div>
+        <div class="dropdown-menu" id="mediaMenu">
+          <div class="dropdown-item" onclick="toggleMediaItem(this,'Google')">
+            <span class="checkbox-icon" id="cb-Google"></span> Google
+          </div>
+          <div class="dropdown-item" onclick="toggleMediaItem(this,'Facebook')">
+            <span class="checkbox-icon" id="cb-Facebook"></span> Facebook
+          </div>
+          <div class="dropdown-item" onclick="toggleMediaItem(this,'Apple')">
+            <span class="checkbox-icon" id="cb-Apple"></span> Apple
+          </div>
+          <div class="dropdown-item" onclick="toggleMediaItem(this,'TikTok')">
+            <span class="checkbox-icon" id="cb-TikTok"></span> TikTok
+          </div>
+        </div>
+      </div>
+      <!-- 新增：审核状态（单选） -->
+      <div class="form-item dropdown-wrap">
+        <label>审核状态 <span class="new-badge">新</span></label>
+        <div class="el-select" id="approveSelect" onclick="toggleApprove()">
+          <span id="approvePlaceholder">全部</span>
+          <span class="arrow">▾</span>
+        </div>
+        <div class="dropdown-menu" id="approveMenu">
+          <div class="dropdown-item selected" onclick="selectApprove(this,'全部','')">全部</div>
+          <div class="dropdown-item" onclick="selectApprove(this,'待审核','0')">待审核</div>
+          <div class="dropdown-item" onclick="selectApprove(this,'审核中','1')">审核中</div>
+          <div class="dropdown-item" onclick="selectApprove(this,'通过','2')">通过</div>
+          <div class="dropdown-item" onclick="selectApprove(this,'驳回','3')">驳回</div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="search()">搜索</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="op-bar">
+      <button class="btn btn-primary">导入</button>
+      <button class="btn btn-primary">批量推送</button>
+      <button class="btn btn-default">导出</button>
+    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>计提ID</th>
+          <th>合同编号</th>
+          <th>客户名称</th>
+          <th class="new-col-header">媒体 ✦新</th>
+          <th>计提金额</th>
+          <th>结算月份</th>
+          <th>推送状态</th>
+          <th class="new-col-header">审核状态 ✦新</th>
+          <th>上传人 ✦新</th>
+          <th>计提人</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td>CJT202404001</td><td>HT2024001</td><td>ABC Tech Ltd</td>
+          <td>Google</td><td>¥ 128,000</td><td>2024-04</td>
+          <td><span class="tag tag-green">已推送</span></td>
+          <td><span class="tag tag-green">通过</span></td>
+          <td>张三</td><td>李四</td><td><a href="#" style="color:#1677ff">详情</a></td>
+        </tr>
+        <tr>
+          <td>CJT202404002</td><td>HT2024002</td><td>XYZ Global</td>
+          <td>Facebook</td><td>¥ 56,000</td><td>2024-04</td>
+          <td><span class="tag tag-orange">待推送</span></td>
+          <td><span class="tag tag-orange">审核中</span></td>
+          <td>王五</td><td>赵六</td><td><a href="#" style="color:#1677ff">详情</a></td>
+        </tr>
+        <tr>
+          <td>CJT202404003</td><td>HT2024003</td><td>印度Partner</td>
+          <td>Apple</td><td>¥ 85,000</td><td>2024-04</td>
+          <td><span class="tag tag-blue">线下同步</span></td>
+          <td><span class="tag tag-blue">待审核</span></td>
+          <td>陈七</td><td>孙八</td><td><a href="#" style="color:#1677ff">详情</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let selectedMedia = [];
+  let mediaMenuOpen = false;
+  let approveMenuOpen = false;
+
+  function toggleMedia() {
+    mediaMenuOpen = !mediaMenuOpen;
+    document.getElementById('mediaMenu').classList.toggle('open', mediaMenuOpen);
+    if (approveMenuOpen) { approveMenuOpen = false; document.getElementById('approveMenu').classList.remove('open'); }
+  }
+  function toggleMediaItem(el, val) {
+    event.stopPropagation();
+    const cb = document.getElementById('cb-' + val);
+    if (selectedMedia.includes(val)) {
+      selectedMedia = selectedMedia.filter(v => v !== val);
+      cb.classList.remove('checked');
+    } else {
+      selectedMedia.push(val);
+      cb.classList.add('checked');
+    }
+    const ph = document.getElementById('mediaPlaceholder');
+    if (selectedMedia.length === 0) ph.innerHTML = '请选择媒体';
+    else ph.innerHTML = selectedMedia.slice(0,2).join('、') + (selectedMedia.length > 2 ? ` <span class="tag-count">+${selectedMedia.length-2}</span>` : '');
+  }
+  function toggleApprove() {
+    approveMenuOpen = !approveMenuOpen;
+    document.getElementById('approveMenu').classList.toggle('open', approveMenuOpen);
+    if (mediaMenuOpen) { mediaMenuOpen = false; document.getElementById('mediaMenu').classList.remove('open'); }
+  }
+  function selectApprove(el, label, val) {
+    event.stopPropagation();
+    document.querySelectorAll('#approveMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('approvePlaceholder').textContent = label;
+    approveMenuOpen = false;
+    document.getElementById('approveMenu').classList.remove('open');
+  }
+  function search() {
+    const statusMap = {'待审核':'tag-blue','审核中':'tag-orange','通过':'tag-green','驳回':'tag-red','全部':''};
+    const rows = document.querySelectorAll('#tableBody tr');
+    const selApprove = document.getElementById('approvePlaceholder').textContent;
+    rows.forEach(r => {
+      const mediaTd = r.cells[3].textContent.trim();
+      const mediaOk = selectedMedia.length === 0 || selectedMedia.includes(mediaTd);
+      const approveOk = selApprove === '全部' || r.cells[7].textContent.trim() === selApprove;
+      r.style.display = (mediaOk && approveOk) ? '' : 'none';
+    });
+  }
+  document.addEventListener('click', () => {
+    mediaMenuOpen = false; approveMenuOpen = false;
+    document.getElementById('mediaMenu').classList.remove('open');
+    document.getElementById('approveMenu').classList.remove('open');
+  });
+</script>
+</body>
+</html>

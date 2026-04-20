@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能五 — 计提自定义字段导出弹窗</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'PingFang SC', Arial, sans-serif; font-size: 13px; background: #f0f2f5; }
+  .page-header { background: #fff; padding: 14px 20px; border-bottom: 1px solid #e8e8e8; font-size: 16px; font-weight: 500; color: #262626; }
+  .page-content { padding: 16px; }
+  .card { background: #fff; border-radius: 4px; padding: 16px; border: 1px solid #e8e8e8; }
+  .notice { background: #fffbe6; border: 1px solid #ffe58f; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #7c4e00; margin-bottom: 12px; }
+  .op-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .btn { height: 30px; padding: 0 14px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:disabled { background: #d9d9d9; color: #fff; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #262626; border: 1px solid #d9d9d9; }
+
+  /* Table placeholder */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #fafafa; color: #595959; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; color: #262626; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 11px; }
+  .tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .tag-blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .new-col { color: #1677ff; font-weight: 600; }
+
+  /* Modal */
+  .mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 50; display: none; }
+  .mask.open { display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 8px; width: 600px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden; }
+  .modal-header { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-size: 15px; font-weight: 600; color: #262626; }
+  .close-btn { font-size: 20px; color: #8c8c8c; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 16px 20px; }
+  .select-all-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; color: #595959; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+  .fields-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .field-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+  .field-item:hover { background: #f5f5f5; }
+  .field-item label { cursor: pointer; color: #262626; }
+  .field-item .new-tag { font-size: 10px; background: #ff4d4f; color: #fff; padding: 0 3px; border-radius: 2px; margin-left: 2px; }
+  input[type=checkbox] { width: 14px; height: 14px; accent-color: #1677ff; cursor: pointer; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+  .warn-tip { color: #ff4d4f; font-size: 12px; display: none; }
+  .warn-tip.show { display: block; }
+  .selected-count { font-size: 12px; color: #8c8c8c; }
+</style>
+</head>
+<body>
+<div class="page-header">计提管理</div>
+<div class="page-content">
+  <div class="notice">💡 功能五演示：点击「导出」按钮，弹出自定义字段选择弹窗，默认全选，至少选1个字段</div>
+  <div class="card">
+    <div class="op-bar">
+      <button class="btn btn-primary">导入</button>
+      <button class="btn btn-primary">批量推送</button>
+      <button class="btn btn-default" onclick="openModal()">导出</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>计提ID</th><th>合同编号</th><th>客户名称</th>
+          <th class="new-col">媒体 ✦</th>
+          <th>计提金额</th><th>结算月份</th><th>财收月份</th>
+          <th>推送状态</th>
+          <th class="new-col">审核状态 ✦</th>
+          <th class="new-col">上传人 ✦</th>
+          <th>计提人</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CJT202404001</td><td>HT2024001</td><td>ABC Tech</td>
+          <td>Google</td><td>¥ 128,000</td><td>2024-04</td><td>2024-04</td>
+          <td><span class="tag tag-green">已推送</span></td>
+          <td><span class="tag tag-green">通过</span></td>
+          <td>张三</td><td>李四</td>
+        </tr>
+        <tr>
+          <td>CJT202404002</td><td>HT2024002</td><td>印度Partner</td>
+          <td>Apple</td><td>¥ 85,000</td><td>2024-04</td><td>—</td>
+          <td><span class="tag tag-blue">线下同步</span></td>
+          <td><span class="tag tag-blue">待审核</span></td>
+          <td>王五</td><td>赵六</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 自定义导出弹窗 -->
+<div class="mask" id="exportMask" onclick="handleMaskClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">自定义导出字段</span>
+      <span class="close-btn" onclick="closeModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="select-all-row">
+        <input type="checkbox" id="selectAll" onchange="toggleAll(this)" checked>
+        <label for="selectAll" style="cursor:pointer;font-weight:500;">全选</label>
+        <span class="selected-count" id="selectedCount">已选 12/12</span>
+      </div>
+      <div class="fields-grid" id="fieldsGrid">
+        <!-- fields injected by JS -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="warn-tip" id="warnTip">至少选择一个字段</span>
+      <button class="btn btn-default" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" id="confirmBtn" onclick="doExport()">确认导出</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const fields = [
+  { key: 'provisionId', label: '计提ID', isNew: false },
+  { key: 'contractCode', label: '合同编号', isNew: false },
+  { key: 'customerName', label: '客户名称', isNew: false },
+  { key: 'media', label: '媒体', isNew: true },
+  { key: 'amount', label: '计提金额', isNew: false },
+  { key: 'settlementMonth', label: '结算月份', isNew: false },
+  { key: 'earningMonth', label: '财收月份', isNew: false },
+  { key: 'pushStatus', label: '推送状态', isNew: false },
+  { key: 'approveStatus', label: '审核状态', isNew: true },
+  { key: 'uploadUser', label: '上传人', isNew: true },
+  { key: 'provisionUser', label: '计提人', isNew: false },
+  { key: 'createTime', label: '创建时间', isNew: false },
+];
+
+let selectedFields = new Set(fields.map(f => f.key));
+
+function renderFields() {
+  const grid = document.getElementById('fieldsGrid');
+  grid.innerHTML = fields.map(f => `
+    <div class="field-item">
+      <input type="checkbox" id="cb_${f.key}" ${selectedFields.has(f.key) ? 'checked' : ''}
+        onchange="onFieldChange('${f.key}', this)">
+      <label for="cb_${f.key}">${f.label}${f.isNew ? '<span class="new-tag">新</span>' : ''}</label>
+    </div>
+  `).join('');
+  updateState();
+}
+
+function onFieldChange(key, cb) {
+  if (cb.checked) selectedFields.add(key);
+  else selectedFields.delete(key);
+  updateState();
+}
+
+function toggleAll(cb) {
+  if (cb.checked) {
+    fields.forEach(f => selectedFields.add(f.key));
+  } else {
+    selectedFields.clear();
+  }
+  document.querySelectorAll('#fieldsGrid input[type=checkbox]').forEach(c => c.checked = cb.checked);
+  updateState();
+}
+
+function updateState() {
+  const count = selectedFields.size;
+  const total = fields.length;
+  document.getElementById('selectedCount').textContent = `已选 ${count}/${total}`;
+  const confirmBtn = document.getElementById('confirmBtn');
+  const warnTip = document.getElementById('warnTip');
+  const allCb = document.getElementById('selectAll');
+  allCb.checked = count === total;
+  allCb.indeterminate = count > 0 && count < total;
+  if (count === 0) {
+    confirmBtn.disabled = true;
+    warnTip.classList.add('show');
+  } else {
+    confirmBtn.disabled = false;
+    warnTip.classList.remove('show');
+  }
+}
+
+function openModal() {
+  selectedFields = new Set(fields.map(f => f.key));
+  renderFields();
+  document.getElementById('exportMask').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('exportMask').classList.remove('open');
+}
+
+function handleMaskClick(e) {
+  if (e.target === document.getElementById('exportMask')) closeModal();
+}
+
+function doExport() {
+  const selected = fields.filter(f => selectedFields.has(f.key)).map(f => f.label);
+  alert('导出字段：' + selected.join('、') + '\n\n（实际使用时将直接下载 Excel 文件）');
+  closeModal();
+}
+</script>
+</body>
+</html>
