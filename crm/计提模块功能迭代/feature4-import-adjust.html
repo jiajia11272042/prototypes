@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能四 — 导入调整收入按钮（销管/超管可见）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'PingFang SC', Arial, sans-serif; font-size: 13px; background: #f0f2f5; }
+  .page-header { background: #fff; padding: 14px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+  .page-title { font-size: 16px; font-weight: 500; color: #262626; }
+  .role-switch { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #595959; }
+  .role-switch label { cursor: pointer; }
+  select { border: 1px solid #d9d9d9; border-radius: 4px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
+  .page-content { padding: 16px; }
+  .card { background: #fff; border-radius: 4px; padding: 16px; border: 1px solid #e8e8e8; }
+  .notice { background: #fffbe6; border: 1px solid #ffe58f; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #7c4e00; margin-bottom: 12px; }
+  .op-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+  .btn { height: 30px; padding: 0 14px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-default { background: #fff; color: #262626; border: 1px solid #d9d9d9; }
+  .btn-warning { background: #fff; color: #fa8c16; border: 1px solid #ffd591; }
+  .btn-warning:hover { background: #fff7e6; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #fafafa; color: #595959; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; color: #262626; white-space: nowrap; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 11px; }
+  .tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .tag-blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .tag-orange { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+
+  .perm-badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 11px; }
+  .perm-only { background: #fff0f6; color: #eb2f96; border: 1px solid #ffadd2; }
+  .divider-text { color: #8c8c8c; font-size: 12px; }
+
+  /* Modal */
+  .mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 50; display: none; }
+  .mask.open { display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 8px; width: 520px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden; }
+  .modal-header { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-size: 15px; font-weight: 600; color: #262626; }
+  .close-btn { font-size: 20px; color: #8c8c8c; cursor: pointer; line-height: 1; }
+  .close-btn:hover { color: #262626; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; }
+
+  .upload-area { border: 2px dashed #d9d9d9; border-radius: 6px; padding: 32px; text-align: center; color: #8c8c8c; cursor: pointer; }
+  .upload-area:hover { border-color: #1677ff; color: #1677ff; }
+  .upload-area .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-area .upload-hint { font-size: 12px; margin-top: 6px; }
+
+  .tip-box { background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px; padding: 8px 12px; font-size: 12px; color: #389e0d; margin-top: 12px; }
+  .tip-box li { margin-left: 16px; margin-top: 4px; }
+
+  .role-label { font-size: 12px; padding: 2px 8px; border-radius: 3px; }
+  .role-salesmgr { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .role-superadmin { background: #fff0f6; color: #eb2f96; border: 1px solid #ffadd2; }
+  .role-normal { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <span class="page-title">计提管理</span>
+  <div class="role-switch">
+    <span>当前角色：</span>
+    <select id="roleSelect" onchange="updateRole()">
+      <option value="salesmgr">销管（roleId=4）</option>
+      <option value="superadmin">超管（roleId=1）</option>
+      <option value="operator">运营（roleId=11/12）</option>
+      <option value="sales">销售（roleId=6）</option>
+    </select>
+    <span id="roleBadge" class="role-label role-salesmgr">销管</span>
+  </div>
+</div>
+<div class="page-content">
+  <div class="notice" id="noticeBox">💡 功能四演示：切换右上角角色，观察「导入调整收入」按钮的显示/隐藏。仅 <strong>销管（roleId=4）</strong> 和 <strong>超管（roleId=1）</strong> 可见。</div>
+  <div class="card">
+    <div class="op-bar">
+      <button class="btn btn-primary" onclick="openImportModal('normal')">导入</button>
+      <button class="btn btn-primary">批量推送</button>
+      <button class="btn btn-default">导出</button>
+      <!-- 仅销管/超管可见 -->
+      <button class="btn btn-warning" id="importAdjustBtn" onclick="openImportModal('adjust')"
+              style="display:flex;align-items:center;gap:4px;">
+        ⬆ 导入调整收入
+        <span class="perm-badge perm-only">销管/超管</span>
+      </button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>计提ID</th><th>合同ID</th><th>客户名称</th>
+          <th>媒体</th>
+          <th>计提金额</th><th>结算月份</th><th>财收月份</th>
+          <th>推送状态</th>
+          <th>审核状态</th>
+          <th>上传人</th>
+          <th>计提人</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CJT202404001</td><td>HT2024001</td><td>ABC Tech</td>
+          <td>Google</td><td>¥ 128,000</td><td>2024-04</td><td>2024-04</td>
+          <td><span class="tag tag-green">推送成功</span></td>
+          <td><span class="tag tag-green">通过</span></td>
+          <td>张三</td><td>李四</td>
+        </tr>
+        <tr>
+          <td>CJT202404002</td><td>HT2024002</td><td>印度Partner</td>
+          <td>Apple</td><td>¥ 85,000</td><td>2024-04</td><td>—</td>
+          <td><span class="tag tag-blue">线下同步</span></td>
+          <td><span class="tag tag-blue">待审核</span></td>
+          <td>王五</td><td>赵六</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 导入弹窗（两种模式：普通导入 / 调整收入导入） -->
+<div class="mask" id="importMask" onclick="handleMaskClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="importModalTitle">批量导入计提</span>
+      <span class="close-btn" onclick="closeModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="upload-area" onclick="fakeUpload()">
+        <div class="upload-icon">📁</div>
+        <div>点击或拖拽文件到此区域上传</div>
+        <div class="upload-hint" id="uploadHint">支持 .xlsx / .xls 格式，单次最多 1000 行</div>
+      </div>
+      <div class="tip-box" id="tipBox">
+        <strong>导入说明：</strong>
+        <ul id="tipList"></ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="fakeDownloadTemplate()" style="margin-right:auto">下载模板</button>
+      <button class="btn btn-default" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="fakeConfirm()">开始导入</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const roles = {
+  salesmgr: { label: '销管', badge: 'role-salesmgr', canImportAdjust: true },
+  superadmin: { label: '超管', badge: 'role-superadmin', canImportAdjust: true },
+  operator: { label: '运营', badge: 'role-normal', canImportAdjust: false },
+  sales: { label: '销售', badge: 'role-normal', canImportAdjust: false },
+};
+
+function updateRole() {
+  const sel = document.getElementById('roleSelect').value;
+  const role = roles[sel];
+  const badge = document.getElementById('roleBadge');
+  badge.className = 'role-label ' + role.badge;
+  badge.textContent = role.label;
+
+  const adjustBtn = document.getElementById('importAdjustBtn');
+  adjustBtn.style.display = role.canImportAdjust ? 'flex' : 'none';
+
+  const notice = document.getElementById('noticeBox');
+  if (role.canImportAdjust) {
+    notice.innerHTML = `💡 当前角色「${role.label}」有权限，「导入调整收入」按钮 <strong style="color:#52c41a">可见 ✓</strong>`;
+  } else {
+    notice.innerHTML = `💡 当前角色「${role.label}」无权限，「导入调整收入」按钮 <strong style="color:#ff4d4f">隐藏 ✗</strong>（仅销管/超管可见）`;
+  }
+}
+
+let currentMode = 'normal';
+
+function openImportModal(mode) {
+  currentMode = mode;
+  const isAdjust = mode === 'adjust';
+  document.getElementById('importModalTitle').textContent = isAdjust ? '导入调整收入' : '批量导入计提';
+  document.getElementById('uploadHint').textContent = isAdjust
+    ? '支持 .xlsx / .xls 格式，单次最多 1000 行（仅限调整成本类型）'
+    : '支持 .xlsx / .xls 格式，单次最多 1000 行';
+  const tips = isAdjust ? [
+    '本入口仅用于导入「调整成本（earning_type=2）」类型的计提数据',
+    '导入后触发 gap 审批流程，无需手动发起审核',
+    '同一主体+月份的重复导入将覆盖上次数据（push_status=3 的印度主体除外）',
+    '字段格式及枚举值请参照模板',
+  ] : [
+    '支持导入「预估成本（earning_type=0）」和「冲销成本（earning_type=1）」',
+    '调整成本类型请使用「导入调整收入」专用入口',
+    '重复导入将覆盖上次数据（push_status=3 的印度主体除外）',
+    '行级校验失败的行将跳过，合法行正常导入',
+  ];
+  const tipList = document.getElementById('tipList');
+  tipList.innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+  document.getElementById('importMask').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('importMask').classList.remove('open');
+}
+
+function handleMaskClick(e) {
+  if (e.target === document.getElementById('importMask')) closeModal();
+}
+
+function fakeUpload() {
+  alert('（演示）选择文件对话框\n\n实际使用时弹出文件选择器');
+}
+
+function fakeDownloadTemplate() {
+  alert('（演示）下载模板\n\n实际使用时下载对应的 Excel 模板文件');
+}
+
+function fakeConfirm() {
+  alert('（演示）开始导入\n\n实际使用时提交文件到后端处理，并显示行级结果');
+  closeModal();
+}
+
+// Init
+updateRole();
+</script>
+</body>
+</html>

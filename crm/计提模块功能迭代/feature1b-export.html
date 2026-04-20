@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能一B — 自定义字段导出弹窗（A/B分组）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'PingFang SC', Arial, sans-serif; font-size: 13px; background: #f0f2f5; }
+  .page-header { background: #fff; padding: 14px 20px; border-bottom: 1px solid #e8e8e8; font-size: 16px; font-weight: 500; color: #262626; }
+  .page-content { padding: 16px; }
+  .card { background: #fff; border-radius: 4px; padding: 16px; border: 1px solid #e8e8e8; }
+  .notice { background: #fffbe6; border: 1px solid #ffe58f; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #7c4e00; margin-bottom: 12px; }
+  .op-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .btn { height: 30px; padding: 0 14px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:disabled { background: #d9d9d9; color: #fff; cursor: not-allowed; }
+  .btn-default { background: #fff; color: #262626; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1677ff; border-color: #1677ff; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #fafafa; color: #595959; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; color: #262626; white-space: nowrap; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 2px; font-size: 11px; }
+  .tag-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .tag-blue { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .new-col { color: #1677ff; font-weight: 600; }
+
+  /* Modal */
+  .mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 50; display: none; }
+  .mask.open { display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 8px; width: 640px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.18); overflow: hidden; }
+  .modal-header { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .modal-title { font-size: 15px; font-weight: 600; color: #262626; }
+  .close-btn { font-size: 20px; color: #8c8c8c; cursor: pointer; line-height: 1; }
+  .close-btn:hover { color: #262626; }
+  .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+
+  /* Global select all */
+  .select-all-row { display: flex; align-items: center; gap: 8px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+  .select-all-row label { font-size: 13px; font-weight: 500; color: #262626; cursor: pointer; }
+  .selected-count { font-size: 12px; color: #8c8c8c; margin-left: auto; }
+
+  /* Group section */
+  .group-section { margin-bottom: 12px; border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+  .group-header { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: #fafafa; cursor: pointer; user-select: none; }
+  .group-header:hover { background: #f0f5ff; }
+  .group-title { font-size: 13px; font-weight: 500; color: #262626; flex: 1; }
+  .group-count { font-size: 12px; color: #8c8c8c; }
+  .group-arrow { font-size: 11px; color: #8c8c8c; transition: transform 0.2s; }
+  .group-arrow.collapsed { transform: rotate(-90deg); }
+  .group-select-all { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #595959; cursor: pointer; }
+  .group-body { padding: 10px 12px; }
+  .group-body.hidden { display: none; }
+  .fields-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .field-item { display: flex; align-items: center; gap: 5px; padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+  .field-item:hover { background: #f5f5f5; }
+  .field-item label { cursor: pointer; color: #262626; font-size: 12px; display: flex; align-items: center; gap: 3px; }
+  .new-tag { font-size: 10px; background: #ff4d4f; color: #fff; padding: 0 3px; border-radius: 2px; }
+  input[type=checkbox] { width: 14px; height: 14px; accent-color: #1677ff; cursor: pointer; flex-shrink: 0; }
+
+  .warn-tip { color: #ff4d4f; font-size: 12px; }
+  .warn-tip.hidden { display: none; }
+  .footer-left { display: flex; align-items: center; gap: 12px; }
+  .footer-btns { display: flex; gap: 8px; }
+
+  /* Group B badge */
+  .group-badge { font-size: 11px; background: #f0f5ff; color: #1677ff; border: 1px solid #adc6ff; padding: 1px 6px; border-radius: 2px; }
+  .group-a-badge { background: #f6ffed; color: #52c41a; border-color: #b7eb8f; }
+</style>
+</head>
+<body>
+<div class="page-header">计提管理</div>
+<div class="page-content">
+  <div class="notice">💡 功能一B 演示：点击「导出」按钮，弹出自定义字段选择弹窗，字段分为 A组（列表展示字段，20个）和 B组（详情字段，15个，默认折叠）</div>
+  <div class="card">
+    <div class="op-bar">
+      <button class="btn btn-primary">导入</button>
+      <button class="btn btn-primary">批量推送</button>
+      <button class="btn btn-default" onclick="openModal()">导出</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>计提ID</th><th>合同ID</th><th>客户名称</th>
+          <th class="new-col">媒体 ✦</th>
+          <th>收入类型</th><th>财收月份</th><th>结算月份</th>
+          <th>推送状态</th>
+          <th class="new-col">审核状态 ✦</th>
+          <th class="new-col">上传人 ✦</th>
+          <th>计提人</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CJT202404001</td><td>HT2024001</td><td>ABC Tech</td>
+          <td>Google</td><td>预估成本</td><td>2024-04</td><td>2024-04</td>
+          <td><span class="tag tag-green">推送成功</span></td>
+          <td><span class="tag tag-green">通过</span></td>
+          <td>张三</td><td>李四</td>
+        </tr>
+        <tr>
+          <td>CJT202404002</td><td>HT2024002</td><td>印度Partner</td>
+          <td>Apple</td><td>调整成本</td><td>2024-04</td><td>—</td>
+          <td><span class="tag tag-blue">线下同步</span></td>
+          <td><span class="tag tag-blue">待审核</span></td>
+          <td>王五</td><td>赵六</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 自定义导出弹窗 -->
+<div class="mask" id="exportMask" onclick="handleMaskClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">自定义导出字段</span>
+      <span class="close-btn" onclick="closeModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <!-- Global select all -->
+      <div class="select-all-row">
+        <input type="checkbox" id="globalSelectAll" onchange="toggleGlobalAll(this)" checked>
+        <label for="globalSelectAll" style="font-weight:500">全选</label>
+        <span class="selected-count" id="selectedCount">已选 35/35</span>
+      </div>
+
+      <!-- A组 -->
+      <div class="group-section">
+        <div class="group-header" onclick="toggleGroup('groupA')">
+          <input type="checkbox" id="groupAAllCb" onclick="event.stopPropagation()" onchange="toggleGroupAll('groupA', this)" checked>
+          <span class="group-title">A组 <span class="group-badge group-a-badge">列表展示字段</span></span>
+          <span class="group-count" id="groupACount">已选 20/20</span>
+          <span class="group-arrow" id="groupAArrow">▾</span>
+        </div>
+        <div class="group-body" id="groupABody">
+          <div class="fields-grid" id="groupAGrid"></div>
+        </div>
+      </div>
+
+      <!-- B组 -->
+      <div class="group-section">
+        <div class="group-header" onclick="toggleGroup('groupB')">
+          <input type="checkbox" id="groupBAllCb" onclick="event.stopPropagation()" onchange="toggleGroupAll('groupB', this)" checked>
+          <span class="group-title">B组 <span class="group-badge">详情字段</span></span>
+          <span class="group-count" id="groupBCount">已选 15/15</span>
+          <span class="group-arrow group-arrow collapsed" id="groupBArrow">▾</span>
+        </div>
+        <div class="group-body hidden" id="groupBBody">
+          <div class="fields-grid" id="groupBGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="footer-left">
+        <span class="warn-tip hidden" id="warnTip">至少选择一个字段</span>
+      </div>
+      <div class="footer-btns">
+        <button class="btn btn-default" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" id="confirmBtn" onclick="doExport()">确认导出</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const groupA = [
+  { key: 'provisionId', label: '计提ID', isNew: false },
+  { key: 'contractCode', label: '合同ID', isNew: false },
+  { key: 'country', label: '国家', isNew: false },
+  { key: 'media', label: '媒体', isNew: true },
+  { key: 'earningType', label: '收入类型', isNew: false },
+  { key: 'earningMonth', label: '财收月份', isNew: false },
+  { key: 'provisionMoney', label: '计提金额', isNew: false },
+  { key: 'usdMoney', label: '美金金额', isNew: false },
+  { key: 'monetaryUnit', label: '货币单位', isNew: false },
+  { key: 'provisionUserName', label: '计提人', isNew: false },
+  { key: 'uploadUser', label: '上传人', isNew: true },
+  { key: 'approveStatus', label: '审核状态', isNew: true },
+  { key: 'pushStatus', label: '推送状态', isNew: false },
+  { key: 'ourMainBodyName', label: '我方主体', isNew: false },
+  { key: 'largeBusinessLineName', label: '一级业务线', isNew: false },
+  { key: 'businessLineName', label: '二级业务线', isNew: false },
+  { key: 'settlementStartTime', label: '结算开始时间', isNew: false },
+  { key: 'settlementEndTime', label: '结算结束时间', isNew: false },
+  { key: 'createTime', label: '计提创建时间', isNew: false },
+  { key: 'remark', label: '备注', isNew: false },
+];
+
+const groupB = [
+  { key: 'cnyDeduction', label: 'CNY扣税', isNew: false },
+  { key: 'taxRate', label: '税率', isNew: false },
+  { key: 'additionalProvisionReason', label: '调整原因', isNew: false },
+  { key: 'customerAbbreviation', label: '客户简称', isNew: false },
+  { key: 'groupCompanyName', label: '集团名称', isNew: false },
+  { key: 'customerCompanyName', label: '公司名称', isNew: false },
+  { key: 'industryName', label: '行业', isNew: false },
+  { key: 'ourMainBodyCode', label: '我方主体代号', isNew: false },
+  { key: 'businessCounterpartName', label: '商务对接人', isNew: false },
+  { key: 'contractStatus', label: '合同状态', isNew: false },
+  { key: 'businessLineNameThird', label: '三级业务线', isNew: true },
+  { key: 'customerType', label: '客户类型', isNew: true },
+  { key: 'updateTime', label: '计提更新时间', isNew: false },
+  { key: 'pushDefeatedReason', label: '推送失败原因', isNew: false },
+  { key: 'pushTime', label: '计提推送时间', isNew: false },
+];
+
+const allFields = [...groupA, ...groupB];
+let selectedA = new Set(groupA.map(f => f.key));
+let selectedB = new Set(groupB.map(f => f.key));
+
+function renderGroup(group, selected, gridId) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = group.map(f => `
+    <div class="field-item">
+      <input type="checkbox" id="cb_${f.key}" ${selected.has(f.key) ? 'checked' : ''}
+        onchange="onFieldChange('${f.key}', this, '${gridId}')">
+      <label for="cb_${f.key}">${f.label}${f.isNew ? '<span class="new-tag">新</span>' : ''}</label>
+    </div>
+  `).join('');
+}
+
+function onFieldChange(key, cb, gridId) {
+  if (gridId === 'groupAGrid') {
+    if (cb.checked) selectedA.add(key); else selectedA.delete(key);
+  } else {
+    if (cb.checked) selectedB.add(key); else selectedB.delete(key);
+  }
+  updateState();
+}
+
+function toggleGroup(groupId) {
+  const body = document.getElementById(groupId + 'Body');
+  const arrow = document.getElementById(groupId + 'Arrow');
+  body.classList.toggle('hidden');
+  arrow.classList.toggle('collapsed');
+}
+
+function toggleGroupAll(groupId, cb) {
+  if (groupId === 'groupA') {
+    if (cb.checked) groupA.forEach(f => selectedA.add(f.key));
+    else selectedA.clear();
+    document.querySelectorAll('#groupAGrid input[type=checkbox]').forEach(c => c.checked = cb.checked);
+  } else {
+    if (cb.checked) groupB.forEach(f => selectedB.add(f.key));
+    else selectedB.clear();
+    document.querySelectorAll('#groupBGrid input[type=checkbox]').forEach(c => c.checked = cb.checked);
+  }
+  updateState();
+}
+
+function toggleGlobalAll(cb) {
+  if (cb.checked) {
+    groupA.forEach(f => selectedA.add(f.key));
+    groupB.forEach(f => selectedB.add(f.key));
+  } else {
+    selectedA.clear();
+    selectedB.clear();
+  }
+  document.querySelectorAll('#groupAGrid input[type=checkbox], #groupBGrid input[type=checkbox]')
+    .forEach(c => c.checked = cb.checked);
+  document.getElementById('groupAAllCb').checked = cb.checked;
+  document.getElementById('groupBAllCb').checked = cb.checked;
+  updateState();
+}
+
+function updateState() {
+  const countA = selectedA.size;
+  const countB = selectedB.size;
+  const total = countA + countB;
+  const totalAll = groupA.length + groupB.length;
+
+  document.getElementById('selectedCount').textContent = `已选 ${total}/${totalAll}`;
+  document.getElementById('groupACount').textContent = `已选 ${countA}/${groupA.length}`;
+  document.getElementById('groupBCount').textContent = `已选 ${countB}/${groupB.length}`;
+
+  // Group A checkbox state
+  const cbA = document.getElementById('groupAAllCb');
+  cbA.checked = countA === groupA.length;
+  cbA.indeterminate = countA > 0 && countA < groupA.length;
+
+  // Group B checkbox state
+  const cbB = document.getElementById('groupBAllCb');
+  cbB.checked = countB === groupB.length;
+  cbB.indeterminate = countB > 0 && countB < groupB.length;
+
+  // Global checkbox state
+  const cbGlobal = document.getElementById('globalSelectAll');
+  cbGlobal.checked = total === totalAll;
+  cbGlobal.indeterminate = total > 0 && total < totalAll;
+
+  // Confirm button
+  const confirmBtn = document.getElementById('confirmBtn');
+  const warnTip = document.getElementById('warnTip');
+  if (total === 0) {
+    confirmBtn.disabled = true;
+    warnTip.classList.remove('hidden');
+  } else {
+    confirmBtn.disabled = false;
+    warnTip.classList.add('hidden');
+  }
+}
+
+function openModal() {
+  selectedA = new Set(groupA.map(f => f.key));
+  selectedB = new Set(groupB.map(f => f.key));
+  renderGroup(groupA, selectedA, 'groupAGrid');
+  renderGroup(groupB, selectedB, 'groupBGrid');
+  // Reset group B to collapsed
+  document.getElementById('groupBBody').classList.add('hidden');
+  document.getElementById('groupBArrow').classList.add('collapsed');
+  updateState();
+  document.getElementById('exportMask').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('exportMask').classList.remove('open');
+}
+
+function handleMaskClick(e) {
+  if (e.target === document.getElementById('exportMask')) closeModal();
+}
+
+function doExport() {
+  const selA = groupA.filter(f => selectedA.has(f.key)).map(f => f.label);
+  const selB = groupB.filter(f => selectedB.has(f.key)).map(f => f.label);
+  const msg = `A组字段（${selA.length}个）：${selA.join('、')}\n\nB组字段（${selB.length}个）：${selB.length > 0 ? selB.join('、') : '（未选）'}\n\n（实际使用时将直接下载 Excel 文件）`;
+  alert('导出字段预览：\n\n' + msg);
+  closeModal();
+}
+</script>
+</body>
+</html>
