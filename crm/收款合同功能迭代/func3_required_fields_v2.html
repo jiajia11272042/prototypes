@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能三 - 必填项优化 完整原型 v2</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'PingFang SC', sans-serif; }
+body { background: #f5f6fa; padding: 24px; }
+
+.page-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.page-sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+.section { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.section-title { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title::before { content: ''; display: inline-block; width: 4px; height: 16px; background: #1677ff; border-radius: 2px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 24px; }
+.form-item { display: flex; flex-direction: column; gap: 6px; }
+.form-item label { font-size: 13px; color: #555; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.req { color: #ff4d4f; font-size: 13px; }
+.opt-star { color: #bbb; font-size: 13px; }
+.tag { display: inline-block; border-radius: 3px; font-size: 11px; padding: 1px 6px; white-space: nowrap; }
+.tag-new { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+.tag-changed { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
+.tag-confirm { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+.tag-optional { background: #f5f5f5; color: #999; border: 1px solid #d9d9d9; }
+
+.input { border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #333; background: #fff; display: flex; align-items: center; justify-content: space-between; min-height: 36px; }
+.input::after { content: '▾'; color: #bbb; font-size: 12px; }
+.input.no-arrow::after { display: none; }
+.input.disabled { background: #f5f5f5; color: #aaa; }
+.input.active { border-color: #1677ff; }
+.input.warn { border-color: #faad14; background: #fffbe6; }
+.hint { font-size: 11px; color: #999; margin-top: 1px; }
+.hint.changed { color: #d46b08; }
+.hint.new { color: #1677ff; }
+
+/* 决策卡 */
+.option-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }
+.option-card { border: 2px solid #e0e0e0; border-radius: 10px; overflow: hidden; }
+.option-card.option-a { border-color: #91caff; }
+.option-card.option-b { border-color: #d9d9d9; }
+.option-header { padding: 10px 16px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.option-card.option-a .option-header { background: #e6f4ff; color: #0050b3; }
+.option-card.option-b .option-header { background: #fafafa; color: #555; }
+.option-body { padding: 14px 16px; font-size: 13px; color: #444; line-height: 1.7; }
+.option-body ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.option-body li::before { content: '·'; margin-right: 6px; }
+.option-pros { font-size: 12px; color: #389e0d; margin-top: 6px; }
+.option-cons { font-size: 12px; color: #cf1322; margin-top: 2px; }
+
+/* 产品信息表格 */
+.prod-table-wrap { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-top: 12px; }
+.prod-table-header { background: #f5f7fa; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+.prod-table-header-left { font-size: 13px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 8px; }
+.prod-table-header-right { font-size: 12px; color: #888; }
+.prod-state-label { font-size: 12px; border-radius: 4px; padding: 2px 10px; font-weight: 600; }
+.state-required { background: #fff1f0; color: #cf1322; border: 1px solid #ffccc7; }
+.state-optional { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table th { background: #fafafa; border: 1px solid #e0e0e0; padding: 9px 10px; text-align: left; font-weight: 600; color: #555; white-space: nowrap; }
+table th .r { color: #ff4d4f; }
+table th .g { color: #bbb; }
+table td { border: 1px solid #e0e0e0; padding: 8px 10px; color: #333; }
+table td input, table td select { border: 1px solid #d9d9d9; border-radius: 4px; padding: 5px 8px; font-size: 12px; width: 100%; min-width: 80px; }
+table td.dimmed { background: #fafafa; color: #bbb; text-align: center; font-style: italic; }
+table td input.cps-hi { border-color: #1677ff; background: #f0f7ff; }
+table td input.grey { background: #f5f5f5; color: #bbb; border-style: dashed; }
+
+/* 规则提示 */
+.rule-callout { border-radius: 8px; padding: 12px 16px; margin-top: 10px; font-size: 13px; }
+.callout-blue { background: #e6f4ff; border-left: 4px solid #1677ff; color: #003a8c; }
+.callout-orange { background: #fff7e6; border-left: 4px solid #fa8c16; color: #7c4a00; }
+.callout-green { background: #f6ffed; border-left: 4px solid #52c41a; color: #135200; }
+.callout-purple { background: #f9f0ff; border-left: 4px solid #722ed1; color: #391085; }
+
+/* 互动按钮 */
+.seg-ctrl { display: inline-flex; border: 1.5px solid #1677ff; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.seg-btn { padding: 6px 18px; font-size: 13px; cursor: pointer; background: #fff; color: #1677ff; border: none; transition: all 0.15s; }
+.seg-btn.active { background: #1677ff; color: #fff; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare-item { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 16px; }
+.compare-item.highlight { border-color: #52c41a; background: #f6ffed; }
+.compare-label { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 6px; }
+.compare-value { font-size: 13px; color: #333; line-height: 1.6; }
+
+/* 签约方信息 */
+.field-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+.field-row:last-child { border-bottom: none; }
+.field-name { width: 130px; font-size: 13px; color: #555; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+.field-value { flex: 1; }
+.field-status { width: 160px; flex-shrink: 0; font-size: 12px; }
+.change-badge { display: inline-block; background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; border-radius: 3px; font-size: 11px; padding: 1px 6px; }
+.new-badge { display: inline-block; background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; border-radius: 3px; font-size: 11px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+
+<div class="page-title">功能三 · 必填项优化 — 完整原型 v2</div>
+<div class="page-sub">确认范围：hasGuarantee 必填 · 产品信息 Miads代理豁免（整表可空） · 结算方式 CPS 联动 · 客户字段必填</div>
+
+<!-- ① 业务线信息 -->
+<div class="section">
+  <div class="section-title">① 业务线信息（所有业务线通用变更）</div>
+  <div class="form-grid">
+    <div class="form-item">
+      <label><span class="req">*</span>三级业务线</label>
+      <div class="input">广告-MiAds</div>
+    </div>
+    <div class="form-item">
+      <label>二级业务线</label>
+      <div class="input disabled">广告</div>
+    </div>
+    <div class="form-item">
+      <label>一级业务线</label>
+      <div class="input disabled">国际广告</div>
+    </div>
+    <div class="form-item">
+      <label>
+        <span class="req">*</span>是否有保底
+        <span class="tag tag-changed">原非必填→现必填</span>
+      </label>
+      <div class="input active" id="hasGuaranteeInput" onclick="toggleGuarantee(this)">请选择</div>
+      <span class="hint changed">所有业务线统一必填，无豁免</span>
+    </div>
+    <div class="form-item" id="guaranteeAmountItem" style="display:none;">
+      <label>
+        <span class="req">*</span>保底金额
+        <span class="tag tag-changed">是否有保底=是时必填</span>
+      </label>
+      <div class="input no-arrow active">请输入金额</div>
+      <span class="hint new">选择"是"后本字段出现且必填</span>
+    </div>
+  </div>
+  <div class="rule-callout callout-orange" style="margin-top:14px;">
+    💡 改动说明：是否有保底（hasGuarantee）字段已存在于前端 businessLine.vue，后端实体已有，但当前无必填规则。本次仅需前端在 <code>rules</code> 对象中补充 <code>required: true</code>。
+  </div>
+</div>
+
+<!-- ② 产品信息 - Miads代理豁免 -->
+<div class="section">
+  <div class="section-title">② 产品信息（国家单价表）— Miads代理豁免 · 结算方式联动</div>
+
+  <!-- Q1 决策 -->
+  <div style="margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;">
+      ⚠️ 待业务决策 Q1：Miads 代理判断触发时机
+    </div>
+    <div class="option-wrap">
+      <div class="option-card option-a">
+        <div class="option-header">⚡ 方案 A：实时联动（推荐）</div>
+        <div class="option-body">
+          <ul>
+            <li>用户选择客户ID后，系统立即读取该客户的类型（代理/直客）</li>
+            <li>识别为代理 → 产品信息区表头标记变为"非必填"，星号消失</li>
+            <li>用户可直接跳过产品信息，整表空白也能提交</li>
+            <li>客户ID选在签约方信息区（表单下方），表单填写顺序需引导先填客户</li>
+          </ul>
+          <div class="option-pros">✓ 体验好，用户实时感知，减少误填</div>
+          <div class="option-cons">✗ 需要前端读客户类型接口，位置顺序问题需讨论</div>
+        </div>
+      </div>
+      <div class="option-card option-b">
+        <div class="option-header">📋 方案 B：提交时校验</div>
+        <div class="option-body">
+          <ul>
+            <li>填写过程中产品信息始终显示必填星号，无实时变化</li>
+            <li>点击提交时，系统判断客户类型</li>
+            <li>代理类型 → 跳过产品信息必填校验，允许空表提交</li>
+            <li>表单填写顺序无需调整</li>
+          </ul>
+          <div class="option-pros">✓ 改动最小，不改表单布局</div>
+          <div class="option-cons">✗ 用户在填写中看到星号但提交不校验，体验有割裂感</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 产品信息表 演示 -->
+  <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:8px;">效果演示：切换客户类型查看产品信息状态</div>
+  <div class="seg-ctrl">
+    <button class="seg-btn active" onclick="switchCustomerType('agent')">Miads 代理</button>
+    <button class="seg-btn" onclick="switchCustomerType('direct')">Miads 直客</button>
+    <button class="seg-btn" onclick="switchCustomerType('other')">其他业务线</button>
+  </div>
+
+  <div class="prod-table-wrap">
+    <div class="prod-table-header">
+      <div class="prod-table-header-left">
+        产品信息（国家单价表）
+        <span class="prod-state-label" id="prodStateLabel" style="background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f;">非必填 — Miads代理可空表提交</span>
+      </div>
+      <div class="prod-table-header-right" id="prodTableHint">代理客户：整张表可以不填，空表提交不报错</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><span id="th-pkg-req" class="g">○</span> 包名</th>
+          <th><span id="th-attr-req" class="g">○</span> 归因平台</th>
+          <th><span id="th-country-req" class="g">○</span> 国家</th>
+          <th id="th-unit" style=""><span id="th-unit-req" class="g">○</span> 单价 <span class="tag tag-new" style="font-size:10px;">CPS时置灰</span></th>
+          <th><span id="th-sm-req" class="g">○</span> 结算方式</th>
+          <th id="th-split" style=""><span id="th-split-req" class="g">○</span> 分成比例 <span class="tag tag-new" style="font-size:10px;">新增</span></th>
+          <th><span id="th-start-req" class="g">○</span> 生效开始</th>
+          <th><span id="th-end-req" class="g">○</span> 生效结束</th>
+        </tr>
+      </thead>
+      <tbody id="prodTableBody">
+        <tr id="emptyRow">
+          <td colspan="8" class="dimmed">— 代理客户可空表提交，无需填写 —</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CPS联动规则 -->
+  <div class="rule-callout callout-blue" style="margin-top:12px;">
+    <strong>结算方式联动规则（所有情况均适用）：</strong><br>
+    选择 CPS → <strong>单价置灰</strong>，分成比例必填 &nbsp;|&nbsp; 选择非CPS → <strong>分成比例置灰</strong>，单价必填<br>
+    <span style="font-size:12px;color:#555;">分成比例（splitRatio）字段：后端实体已有（BCollectionContractProduct.java:44），需前端在 collectionContractManage.vue 产品表格中新增此列</span>
+  </div>
+</div>
+
+<!-- ③ 签约方信息 -->
+<div class="section">
+  <div class="section-title">③ 签约方信息（必填变更汇总）</div>
+
+  <div class="field-row">
+    <div class="field-name"><span class="req">*</span> 客户ID</div>
+    <div class="field-value"><div class="input">请输入</div></div>
+    <div class="field-status"><span class="change-badge">原仅roleId非8/9必填 → 现统一必填</span></div>
+  </div>
+  <div class="field-row">
+    <div class="field-name"><span class="opt-star">○</span> 客户公司名称</div>
+    <div class="field-value"><div class="input disabled">自动拉取（只读）</div></div>
+    <div class="field-status" style="color:#389e0d;font-size:12px;">根据客户ID自动拉取，不可编辑（原逻辑不变）</div>
+  </div>
+  <div class="field-row">
+    <div class="field-name"><span class="req">*</span> 客户注册地</div>
+    <div class="field-value"><div class="input disabled">自动匹配（只读）</div></div>
+    <div class="field-status"><span class="change-badge">补充必填规则</span></div>
+  </div>
+  <div class="field-row">
+    <div class="field-name"><span class="req">*</span> 客户来源</div>
+    <div class="field-value"><div class="input disabled">自动匹配（只读）</div></div>
+    <div class="field-status"><span class="change-badge">补充必填规则</span></div>
+  </div>
+  <div class="field-row">
+    <div class="field-name">
+      <span class="req">*</span> 销售名称
+      <span class="tag tag-confirm" style="font-size:10px;">待确认</span>
+    </div>
+    <div class="field-value"><div class="input disabled">自动匹配（只读）</div></div>
+    <div class="field-status">
+      <span class="tag tag-confirm">⚠ 待确认：对应「业绩划分」userId 还是另有字段？</span>
+    </div>
+  </div>
+  <div class="rule-callout callout-purple" style="margin-top:10px;">
+    ⚠️ 待业务确认 Q3：「销售名称」对应字段——当前合同表单无独立"销售名称只读字段"，对应的是「业绩划分」中的销售人员（performanceDivisions.userId）。是否为此字段？
+  </div>
+</div>
+
+<!-- ④ 变更清单 -->
+<div class="section">
+  <div class="section-title">④ 开发变更清单</div>
+  <table>
+    <thead>
+      <tr>
+        <th>编号</th>
+        <th>变更内容</th>
+        <th>前端文件</th>
+        <th>后端是否需改</th>
+        <th>状态</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>是否有保底 加 required: true</td>
+        <td>businessLine.vue（rules 对象）</td>
+        <td>否（字段已有）</td>
+        <td><span class="tag tag-new">前端小改</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>保底金额 加 hasGuarantee=1 时必填规则</td>
+        <td>businessLine.vue</td>
+        <td>否</td>
+        <td><span class="tag tag-new">前端小改</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>产品表新增「分成比例」列</td>
+        <td>collectionContractManage.vue</td>
+        <td>否（BCollectionContractProduct.splitRatio 已有）</td>
+        <td><span class="tag tag-changed">前端新增列</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>结算方式CPS联动：CPS→单价置灰，非CPS→分成比例置灰</td>
+        <td>collectionContractManage.vue</td>
+        <td>否</td>
+        <td><span class="tag tag-changed">前端联动逻辑</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Miads-代理时产品信息整表非必填（Q1方案待定）</td>
+        <td>collectionContractManage.vue</td>
+        <td>待定（方案A需接口读客户类型）</td>
+        <td><span class="tag tag-confirm">⚠ 待方案确认</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>客户ID / 客户注册地 / 客户来源 统一必填</td>
+        <td>collectionContractManage.vue（rules）</td>
+        <td>否</td>
+        <td><span class="tag tag-new">前端小改</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>销售名称必填</td>
+        <td>待确认后实现</td>
+        <td>待确认</td>
+        <td><span class="tag tag-confirm">⚠ Q3待确认</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  var currentType = 'agent';
+
+  function toggleGuarantee(el) {
+    if (el.textContent === '请选择') {
+      el.textContent = '是';
+      document.getElementById('guaranteeAmountItem').style.display = 'flex';
+    } else if (el.textContent === '是') {
+      el.textContent = '否';
+      document.getElementById('guaranteeAmountItem').style.display = 'none';
+    } else {
+      el.textContent = '请选择';
+      document.getElementById('guaranteeAmountItem').style.display = 'none';
+    }
+  }
+
+  function switchCustomerType(type) {
+    currentType = type;
+    var btns = document.querySelectorAll('.seg-btn');
+    btns[0].classList.toggle('active', type === 'agent');
+    btns[1].classList.toggle('active', type === 'direct');
+    btns[2].classList.toggle('active', type === 'other');
+
+    var label = document.getElementById('prodStateLabel');
+    var hint = document.getElementById('prodTableHint');
+    var tbody = document.getElementById('prodTableBody');
+    var reqClass = type === 'agent' ? 'g' : 'r';
+    var reqChar = type === 'agent' ? '○' : '*';
+
+    // Update table header required markers
+    ['th-pkg-req','th-attr-req','th-country-req','th-unit-req','th-sm-req','th-split-req','th-start-req','th-end-req'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = reqChar; el.className = reqClass; }
+    });
+
+    if (type === 'agent') {
+      label.textContent = '非必填 — Miads代理可空表提交';
+      label.style.cssText = 'background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f;font-size:12px;border-radius:4px;padding:2px 10px;font-weight:600;';
+      hint.textContent = '代理客户：整张表可以不填，空表提交不报错';
+      tbody.innerHTML = '<tr id="emptyRow"><td colspan="8" class="dimmed">— 代理客户可空表提交，无需填写 —</td></tr>';
+    } else {
+      var required = type === 'direct' ? '必填' : '必填';
+      label.textContent = required + ' — 至少填写一行';
+      label.style.cssText = 'background:#fff1f0;color:#cf1322;border:1px solid #ffccc7;font-size:12px;border-radius:4px;padding:2px 10px;font-weight:600;';
+      hint.textContent = '非代理客户：产品信息必填，需至少有一行完整数据';
+      tbody.innerHTML = getFilledRow();
+    }
+  }
+
+  function getFilledRow() {
+    return '<tr>' +
+      '<td><input value="com.example.app" /></td>' +
+      '<td><input value="AF" /></td>' +
+      '<td><input value="US" /></td>' +
+      '<td><input id="unitPriceRow" value="0.50" /></td>' +
+      '<td><select id="settlementRow" onchange="handleRowSettlement(this.value)">' +
+        '<option value="">请选择</option>' +
+        '<option>CPA</option><option>CPP</option><option value="CPS">CPS</option>' +
+        '<option>CPE</option><option>CPC</option><option>CPM</option>' +
+      '</select></td>' +
+      '<td><input id="splitRatioRow" class="grey" placeholder="非CPS时置灰" disabled /></td>' +
+      '<td><input value="2026-01-01" /></td>' +
+      '<td><input value="2026-12-31" /></td>' +
+    '</tr>';
+  }
+
+  function handleRowSettlement(val) {
+    var unit = document.getElementById('unitPriceRow');
+    var split = document.getElementById('splitRatioRow');
+    if (!unit || !split) return;
+    if (val === 'CPS') {
+      unit.value = '';
+      unit.placeholder = 'CPS时置灰';
+      unit.className = 'grey';
+      unit.disabled = true;
+      split.placeholder = '请输入分成比例%';
+      split.className = 'cps-hi';
+      split.disabled = false;
+    } else if (val) {
+      unit.placeholder = '请输入单价';
+      unit.className = '';
+      unit.disabled = false;
+      split.value = '';
+      split.placeholder = '非CPS时置灰';
+      split.className = 'grey';
+      split.disabled = true;
+    }
+  }
+</script>
+</body>
+</html>
