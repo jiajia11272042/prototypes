@@ -58,7 +58,7 @@ input.inline:disabled{background:#f5f6f7;color:#8f959e;cursor:not-allowed;border
   <div class="rule-box">
     <strong>规则说明：</strong><br>
     ① <strong>结算方式</strong>选择 CPS → 只展示「分成比例」，隐藏「单价」；选择非 CPS → 只展示「单价（必填）」，隐藏「分成比例」；若业务线本身无单价或无分成比例字段，保持不展示。<br>
-    ② <strong>客户 ID / 客户公司名称</strong>：只可从下拉拉取，不允许手动录入（设为只读）。<br>
+    ② <strong>客户 ID / 客户公司名称 / 客户注册地址</strong>：必填，且只可从下拉拉取，不允许手动录入（设为只读）。<br>
     ③ <strong>销售名称</strong>：销售提交合同时必填；商务提交合同时不必填。
   </div>
 
@@ -113,6 +113,16 @@ input.inline:disabled{background:#f5f6f7;color:#8f959e;cursor:not-allowed;border
       <div class="form-field">
         <input type="text" readonly value="北京示例科技有限公司" />
         <div class="hint locked">🔒 只可从下拉拉取，不允许手动输入</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">客户注册地址<span class="req">*</span>
+        <span class="badge badge-readonly">🔒 只读</span>
+      </div>
+      <div class="form-field">
+        <input type="text" readonly value="北京市海淀区中关村大街1号" />
+        <div class="hint locked">🔒 只可从下拉拉取，不允许手动输入，必填</div>
       </div>
     </div>
 

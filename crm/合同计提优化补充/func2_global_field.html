@@ -120,11 +120,8 @@ select.inline:focus{outline:none;border-color:#3370ff}
   <div class="modal">
     <div class="modal-title">⚠️ 切换为 global 需确认</div>
     <div class="modal-body">
-      包名 <strong id="modalPkg"></strong> 下已存在以下国家数据，切换为 <strong>global</strong> 后将<span style="color:#f53f3f">永久删除</span>这些行：
-      <div class="modal-affected-list">
-        <ul id="affectedList"></ul>
-      </div>
-      <div class="warn-box">⚠️ 此操作不可恢复，请确认后再执行</div>
+      包名 <strong id="modalPkg"></strong> 下已有其他国家的产品信息，切换为 <strong>global</strong> 后，<span style="color:#f53f3f;font-weight:600">其他国家的产品信息将会删除，且不可恢复。</span>
+      <div class="warn-box">⚠️ 确认后将直接删除，操作不可撤销</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default" onclick="cancelSwitch()">取消</button>
@@ -151,16 +148,9 @@ function onCountryChange(sel) {
     }
   });
   if (others.length === 0) return; // no conflict, allow
-  // show modal
+  // show modal (simplified: no country list, just warning)
   pendingSwitch = {sel, pkg, others};
   document.getElementById('modalPkg').textContent = pkg;
-  const ul = document.getElementById('affectedList');
-  ul.innerHTML = '';
-  others.forEach(o => {
-    const li = document.createElement('li');
-    li.textContent = '× ' + o.country + ' 行将被删除';
-    ul.appendChild(li);
-  });
   document.getElementById('confirmModal').classList.add('show');
   // reset select back
   sel.value = sel.options[0].value;
