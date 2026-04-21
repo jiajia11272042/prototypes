@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能三：必填项联动 + 客户信息只读 + 销售名称角色必填</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6f7;padding:24px;font-size:14px;color:#1f2329}
+.container{max-width:960px;margin:0 auto}
+h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.subtitle{color:#8f959e;font-size:13px;margin-bottom:20px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rule-box{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.7;color:#5c4000}
+.form-row{display:flex;align-items:flex-start;margin-bottom:14px;gap:12px}
+.form-label{width:150px;min-width:150px;padding-top:7px;color:#4e5969;font-size:13px;text-align:right}
+.form-label .req{color:#f53f3f;margin-left:2px}
+.form-field{flex:1;max-width:360px}
+.form-field input,.form-field select{width:100%;height:34px;border:1px solid #d9d9d9;border-radius:4px;padding:0 10px;font-size:13px;color:#1f2329;background:#fff;outline:none;transition:border .2s}
+.form-field input:focus,.form-field select:focus{border-color:#3370ff}
+.form-field input:disabled,.form-field select:disabled{background:#f5f6f7;color:#8f959e;cursor:not-allowed;border-color:#e0e0e0}
+.form-field input[readonly]{background:#f5f6f7;color:#1f2329;cursor:default;border-color:#e0e0e0}
+.form-field .hint{font-size:12px;color:#8f959e;margin-top:4px}
+.form-field .hint.locked{color:#f53f3f}
+.form-field .hint.info{color:#3370ff}
+.section-header{font-size:13px;font-weight:600;color:#8f959e;letter-spacing:.5px;margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:#f0f0f0}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:3px;padding:2px 8px;font-size:12px;margin-left:6px}
+.badge-readonly{background:#f5f6f7;border:1px solid #d9d9d9;color:#8f959e}
+.badge-required{background:#fff3e0;border:1px solid #ffc107;color:#e65100}
+.badge-optional{background:#f0fff4;border:1px solid #a5d6a7;color:#2e7d32}
+/* Product table */
+.prod-section{margin-top:4px}
+.prod-table{width:100%;border-collapse:collapse;font-size:13px}
+.prod-table th{background:#f5f6f7;padding:10px 12px;text-align:left;border:1px solid #e8e8e8;font-weight:500;color:#4e5969}
+.prod-table td{padding:8px 12px;border:1px solid #e8e8e8;vertical-align:middle}
+.prod-table tr:hover td{background:#f9fbff}
+select.inline{width:100%;height:30px;border:1px solid #d9d9d9;border-radius:4px;padding:0 8px;font-size:13px;background:#fff;cursor:pointer;outline:none}
+select.inline:focus{border-color:#3370ff}
+input.inline{width:100%;height:30px;border:1px solid #d9d9d9;border-radius:4px;padding:0 8px;font-size:13px;outline:none}
+input.inline:focus{border-color:#3370ff}
+input.inline:disabled{background:#f5f6f7;color:#8f959e;cursor:not-allowed;border-color:#e0e0e0}
+.add-row{color:#3370ff;cursor:pointer;font-size:13px;padding:8px 12px;display:block;text-align:left}
+.add-row:hover{background:#f0f4ff;border-radius:4px}
+.cell-hidden{color:#c0c0c0;font-size:12px;font-style:italic}
+/* Role switcher */
+.role-switcher{display:flex;gap:8px;margin-bottom:20px}
+.role-btn{padding:6px 18px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;border:1px solid #d9d9d9;background:#fff;color:#4e5969;transition:all .2s}
+.role-btn.active{background:#3370ff;color:#fff;border-color:#3370ff}
+.role-label{font-size:12px;color:#8f959e;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>功能三：必填项联动 + 客户信息只读 + 销售名称必填规则</h2>
+  <p class="subtitle">结算方式控制单价/分成比例显示；客户 ID / 公司名称只读；销售名称根据提交角色决定是否必填</p>
+
+  <div class="rule-box">
+    <strong>规则说明：</strong><br>
+    ① <strong>结算方式</strong>选择 CPS → 只展示「分成比例」，隐藏「单价」；选择非 CPS → 只展示「单价（必填）」，隐藏「分成比例」；若业务线本身无单价或无分成比例字段，保持不展示。<br>
+    ② <strong>客户 ID / 客户公司名称</strong>：只可从下拉拉取，不允许手动录入（设为只读）。<br>
+    ③ <strong>销售名称</strong>：销售提交合同时必填；商务提交合同时不必填。
+  </div>
+
+  <div style="display:flex;align-items:center;margin-bottom:16px;gap:12px">
+    <span style="font-size:13px;color:#4e5969;font-weight:500">当前提交角色：</span>
+    <div class="role-switcher" style="margin-bottom:0">
+      <div class="role-btn active" onclick="setRole('sales',this)">销售提交</div>
+      <div class="role-btn" onclick="setRole('business',this)">商务提交</div>
+    </div>
+    <span id="roleNote" class="role-label">「销售名称」为必填项</span>
+  </div>
+
+  <!-- 合同相关人 -->
+  <div class="card">
+    <div class="card-title">合同相关人</div>
+
+    <div class="form-row">
+      <div class="form-label">销售名称<span id="salesReq" class="req">*</span></div>
+      <div class="form-field">
+        <input type="text" id="salesName" placeholder="请输入销售名称" />
+        <div id="salesHint" class="hint required" style="color:#f53f3f;font-size:12px;margin-top:4px">销售提交合同时必填</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">商务负责人</div>
+      <div class="form-field">
+        <input type="text" placeholder="请输入商务名称" value="王小明" />
+        <div class="hint">商务人员可编辑，提交时无强制要求</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 签约信息 客户信息 -->
+  <div class="card">
+    <div class="card-title">签约信息 — 客户信息</div>
+
+    <div class="form-row">
+      <div class="form-label">客户 ID<span class="req">*</span>
+        <span class="badge badge-readonly">🔒 只读</span>
+      </div>
+      <div class="form-field">
+        <input type="text" readonly value="CU-20240001" />
+        <div class="hint locked">🔒 只可从下拉拉取，不允许手动输入</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">客户公司名称<span class="req">*</span>
+        <span class="badge badge-readonly">🔒 只读</span>
+      </div>
+      <div class="form-field">
+        <input type="text" readonly value="北京示例科技有限公司" />
+        <div class="hint locked">🔒 只可从下拉拉取，不允许手动输入</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">合同编号</div>
+      <div class="form-field">
+        <input type="text" value="CC-2026-00123" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 产品信息 -->
+  <div class="card">
+    <div class="card-title">
+      <span>产品信息</span>
+      <button style="background:#3370ff;color:#fff;border:none;border-radius:4px;padding:5px 14px;font-size:13px;cursor:pointer" onclick="addRow()">+ 添加产品</button>
+    </div>
+
+    <table class="prod-table" id="prodTable">
+      <thead>
+        <tr>
+          <th style="width:130px">包名</th>
+          <th style="width:100px">国家</th>
+          <th style="width:110px">结算方式</th>
+          <th id="th-price" style="width:100px">单价<span class="req">*</span></th>
+          <th id="th-ratio" style="width:110px;display:none">分成比例<span class="req">*</span></th>
+          <th style="width:70px">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr>
+          <td><input class="inline" value="com.demo.app1" /></td>
+          <td><select class="inline"><option>IN</option><option>US</option><option>global</option></select></td>
+          <td>
+            <select class="inline settlement" onchange="onSettlementChange(this)">
+              <option value="CPI">CPI</option>
+              <option value="CPM">CPM</option>
+              <option value="CPS">CPS</option>
+            </select>
+          </td>
+          <td class="cell-price"><input class="inline" type="text" placeholder="0.00" value="0.50" /></td>
+          <td class="cell-ratio" style="display:none"><input class="inline" type="text" placeholder="如：30%" /></td>
+          <td><button style="border:1px solid #d9d9d9;background:#fff;border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer" onclick="this.closest('tr').remove()">删除</button></td>
+        </tr>
+        <tr>
+          <td><input class="inline" value="com.demo.app2" /></td>
+          <td><select class="inline"><option>BR</option><option>US</option><option>global</option></select></td>
+          <td>
+            <select class="inline settlement" onchange="onSettlementChange(this)">
+              <option value="CPI">CPI</option>
+              <option value="CPM">CPM</option>
+              <option value="CPS" selected>CPS</option>
+            </select>
+          </td>
+          <td class="cell-price" style="display:none"><input class="inline" type="text" placeholder="0.00" /></td>
+          <td class="cell-ratio"><input class="inline" type="text" placeholder="如：30%" value="25%" /></td>
+          <td><button style="border:1px solid #d9d9d9;background:#fff;border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer" onclick="this.closest('tr').remove()">删除</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="add-row" onclick="addRow()">+ 添加一行</button>
+    <div style="color:#8f959e;font-size:12px;margin-top:8px">
+      提示：第一行 CPI（非CPS）→ 只显示「单价」；第二行 CPS → 只显示「分成比例」
+    </div>
+  </div>
+
+  <!-- Rule summary table -->
+  <div class="card">
+    <div class="card-title">结算方式联动规则汇总</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:#f5f6f7">
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">结算方式</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">单价字段</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">分成比例字段</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;font-weight:600;color:#3370ff">CPS</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#8f959e">隐藏</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#2b8f32;font-weight:600">显示（必填）</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969">按销售额分成，不设固定单价</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;font-weight:600;color:#2b8f32">CPI / CPM / 其他</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#2b8f32;font-weight:600">显示（必填）</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#8f959e">隐藏</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969">按安装/展示单价计费</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969" colspan="2">业务线本身无单价字段</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#8f959e">隐藏</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969">保持现状，不因结算方式切换而显示</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let rowCounter = 10;
+
+function setRole(role, btn) {
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const salesInput = document.getElementById('salesName');
+  const salesReq = document.getElementById('salesReq');
+  const salesHint = document.getElementById('salesHint');
+  const roleNote = document.getElementById('roleNote');
+  if (role === 'sales') {
+    salesReq.style.display = 'inline';
+    salesHint.style.display = 'block';
+    salesHint.textContent = '销售提交合同时必填';
+    salesHint.style.color = '#f53f3f';
+    roleNote.textContent = '「销售名称」为必填项';
+    salesInput.placeholder = '请输入销售名称（必填）';
+  } else {
+    salesReq.style.display = 'none';
+    salesHint.style.display = 'block';
+    salesHint.textContent = '商务提交合同时无需填写';
+    salesHint.style.color = '#8f959e';
+    roleNote.textContent = '「销售名称」不必填';
+    salesInput.placeholder = '请输入销售名称（选填）';
+  }
+}
+
+function onSettlementChange(sel) {
+  const tr = sel.closest('tr');
+  const priceCell = tr.querySelector('.cell-price');
+  const ratioCell = tr.querySelector('.cell-ratio');
+  if (sel.value === 'CPS') {
+    if (priceCell) priceCell.style.display = 'none';
+    if (ratioCell) ratioCell.style.display = '';
+  } else {
+    if (priceCell) priceCell.style.display = '';
+    if (ratioCell) ratioCell.style.display = 'none';
+  }
+}
+
+function addRow() {
+  const tbody = document.getElementById('tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="inline" placeholder="输入包名" /></td>
+    <td><select class="inline"><option>IN</option><option>US</option><option>DE</option><option>BR</option><option>global</option></select></td>
+    <td>
+      <select class="inline settlement" onchange="onSettlementChange(this)">
+        <option value="CPI">CPI</option>
+        <option value="CPM">CPM</option>
+        <option value="CPS">CPS</option>
+      </select>
+    </td>
+    <td class="cell-price"><input class="inline" type="text" placeholder="0.00" /></td>
+    <td class="cell-ratio" style="display:none"><input class="inline" type="text" placeholder="如：30%" /></td>
+    <td><button style="border:1px solid #d9d9d9;background:#fff;border-radius:4px;padding:4px 10px;font-size:12px;cursor:pointer" onclick="this.closest('tr').remove()">删除</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+</script>
+</body>
+</html>

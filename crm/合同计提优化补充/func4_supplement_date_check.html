@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能七：补计提日期有效期校验</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6f7;padding:24px;font-size:14px;color:#1f2329}
+.container{max-width:900px;margin:0 auto}
+h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.subtitle{color:#8f959e;font-size:13px;margin-bottom:20px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+.rule-box{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:#5c4000}
+.form-row{display:flex;align-items:flex-start;margin-bottom:16px;gap:12px}
+.form-label{width:160px;min-width:160px;padding-top:7px;color:#4e5969;font-size:13px;text-align:right}
+.form-label .req{color:#f53f3f;margin-left:2px}
+.form-field{flex:1;max-width:380px}
+.form-field input,.form-field select{width:100%;height:34px;border:1px solid #d9d9d9;border-radius:4px;padding:0 10px;font-size:13px;color:#1f2329;background:#fff;outline:none;transition:border .2s}
+.form-field input:focus,.form-field select:focus{border-color:#3370ff}
+.form-field .hint{font-size:12px;color:#8f959e;margin-top:4px}
+.result-box{margin-top:16px;border-radius:6px;padding:14px 18px;font-size:13px;line-height:1.8;display:none}
+.result-box.pass{background:#f0fff4;border:1px solid #a5d6a7;color:#1b5e20;display:block}
+.result-box.fail{background:#fff3f3;border:1px solid #ffcdd2;color:#c62828;display:block}
+.result-box.warn{background:#fff8e6;border:1px solid #ffd591;color:#7c4a00;display:block}
+.result-icon{font-size:16px;margin-right:6px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#3370ff;color:#fff}.btn-primary:hover{background:#2860d4}
+/* Timeline */
+.timeline{display:flex;align-items:stretch;margin:16px 0;gap:0;font-size:12px}
+.tl-seg{flex:1;min-height:40px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.tl-bar{width:100%;height:12px;border-radius:2px}
+.tl-label{font-size:11px;color:#4e5969;text-align:center;white-space:nowrap}
+.tl-valid{background:#c8e6c9}
+.tl-invalid{background:#ffcdd2}
+.tl-target{background:#ffe082}
+.tl-marker{width:2px;height:24px;background:#3370ff;position:absolute;top:-6px}
+/* Scenario tabs */
+.tabs{display:flex;gap:8px;margin-bottom:20px}
+.tab{padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1px solid #d9d9d9;background:#fff;color:#4e5969;transition:all .2s}
+.tab.active{background:#3370ff;color:#fff;border-color:#3370ff}
+.tab:hover:not(.active){border-color:#3370ff;color:#3370ff}
+.scenario-note{background:#f0f4ff;border-left:3px solid #3370ff;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:13px;color:#1f2329}
+table.check-table{width:100%;border-collapse:collapse;font-size:13px}
+table.check-table th{background:#f5f6f7;padding:10px 12px;text-align:left;border:1px solid #e8e8e8;font-weight:500;color:#4e5969}
+table.check-table td{padding:10px 12px;border:1px solid #e8e8e8;vertical-align:middle}
+.tag-pass{display:inline-block;background:#e8f5e9;color:#2e7d32;border-radius:3px;padding:2px 8px;font-size:12px;font-weight:600}
+.tag-fail{display:inline-block;background:#ffebee;color:#c62828;border-radius:3px;padding:2px 8px;font-size:12px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>功能七：补计提日期有效期校验</h2>
+  <p class="subtitle">补计提时校验「计提月份」是否在合同的有效期（start_date ~ end_date）范围内</p>
+
+  <div class="rule-box">
+    <strong>校验规则：</strong>补计提导入时，计提月份（settlementMonth）必须落在合同有效期内（start_date ≤ settlementMonth ≤ end_date）。
+    只要计提月份所在月份与合同有效期有交集即视为合法。<br><br>
+    <strong>示例：</strong>合同有效期 2025-04-01 ~ 2026-04-30，在 2026-06 补计提 2025-08 的数据，
+    2025-08 在 2025-04 ~ 2026-04 范围内，<span style="color:#2b8f32;font-weight:600">✓ 允许补计提</span>。<br>
+    若在 2026-06 补计提 2024-12 的数据，2024-12 在合同生效前，<span style="color:#f53f3f;font-weight:600">✗ 不允许</span>。
+  </div>
+
+  <!-- Scenario Switcher -->
+  <div class="tabs">
+    <div class="tab active" onclick="loadScenario('pass1',this)">场景一：合法补计提</div>
+    <div class="tab" onclick="loadScenario('pass2',this)">场景二：合法（合同末月）</div>
+    <div class="tab" onclick="loadScenario('fail1',this)">场景三：合同生效前 ✗</div>
+    <div class="tab" onclick="loadScenario('fail2',this)">场景四：合同到期后 ✗</div>
+  </div>
+  <div id="scenarioNote" class="scenario-note">当前：2025-08 在合同 2025-04 ~ 2026-04 有效期内，允许补计提</div>
+
+  <div class="card">
+    <div class="card-title">补计提校验模拟</div>
+
+    <div class="form-row">
+      <div class="form-label">合同编号<span class="req">*</span></div>
+      <div class="form-field">
+        <select id="contractSel" onchange="onContractChange()">
+          <option value="CC-2025-001" data-start="2025-04" data-end="2026-04">CC-2025-001（2025-04 ~ 2026-04）</option>
+          <option value="CC-2025-002" data-start="2026-01" data-end="2026-06">CC-2025-002（2026-01 ~ 2026-06）</option>
+          <option value="CC-2024-099" data-start="2024-01" data-end="2024-12">CC-2024-099（2024-01 ~ 2024-12）</option>
+        </select>
+        <div class="hint" id="contractRange">合同有效期：2025-04 ~ 2026-04</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">计提月份<span class="req">*</span></div>
+      <div class="form-field">
+        <input type="month" id="settlementMonth" value="2025-08" onchange="runCheck()" />
+        <div class="hint">补计提时填写实际产生消耗的月份</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">当前操作时间</div>
+      <div class="form-field">
+        <input type="month" id="operateMonth" value="2026-06" readonly />
+        <div class="hint">模拟当前操作月份（实际为系统时间）</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="runCheck()">模拟校验</button>
+
+    <div id="resultBox" class="result-box" style="margin-top:16px"></div>
+
+    <!-- Visual Timeline -->
+    <div id="timelineWrap" style="margin-top:20px;display:none">
+      <div style="font-size:12px;color:#8f959e;margin-bottom:8px">时间轴示意：</div>
+      <div id="timeline" style="display:flex;align-items:center;gap:0;height:32px;position:relative"></div>
+      <div id="tlLegend" style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:#4e5969">
+        <span><span style="display:inline-block;width:16px;height:10px;background:#c8e6c9;border-radius:2px;vertical-align:middle;margin-right:4px"></span>合同有效期</span>
+        <span><span style="display:inline-block;width:16px;height:10px;background:#ffcdd2;border-radius:2px;vertical-align:middle;margin-right:4px"></span>合同外（不允许）</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#ffe082;border:2px solid #f9a825;border-radius:50%;vertical-align:middle;margin-right:4px"></span>计提月份</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Case summary table -->
+  <div class="card">
+    <div class="card-title">典型场景校验结果汇总</div>
+    <table class="check-table">
+      <thead>
+        <tr>
+          <th>合同有效期</th>
+          <th>计提月份</th>
+          <th>操作时间</th>
+          <th>结果</th>
+          <th>原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2025-04 ~ 2026-04</td>
+          <td>2025-08</td>
+          <td>2026-06</td>
+          <td><span class="tag-pass">✓ 允许</span></td>
+          <td>2025-08 在有效期内，操作时间不限制</td>
+        </tr>
+        <tr>
+          <td>2025-04 ~ 2026-04</td>
+          <td>2026-04</td>
+          <td>2026-06</td>
+          <td><span class="tag-pass">✓ 允许</span></td>
+          <td>2026-04 是合同末月，仍在有效期内</td>
+        </tr>
+        <tr>
+          <td>2025-04 ~ 2026-04</td>
+          <td>2024-12</td>
+          <td>2026-06</td>
+          <td><span class="tag-fail">✗ 拒绝</span></td>
+          <td>2024-12 在合同生效前（2025-04 之前）</td>
+        </tr>
+        <tr>
+          <td>2025-04 ~ 2026-04</td>
+          <td>2026-06</td>
+          <td>2026-06</td>
+          <td><span class="tag-fail">✗ 拒绝</span></td>
+          <td>2026-06 在合同到期后（2026-04 之后）</td>
+        </tr>
+        <tr>
+          <td>2026-01 ~ 2026-06</td>
+          <td>2026-03</td>
+          <td>2026-06</td>
+          <td><span class="tag-pass">✓ 允许</span></td>
+          <td>2026-03 在有效期内</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const scenarios = {
+  pass1: {
+    contract: 'CC-2025-001', month: '2025-08', operate: '2026-06',
+    note: '当前：2025-08 在合同 2025-04 ~ 2026-04 有效期内，允许补计提'
+  },
+  pass2: {
+    contract: 'CC-2025-001', month: '2026-04', operate: '2026-06',
+    note: '当前：2026-04 是合同末月，仍在有效期内，允许补计提'
+  },
+  fail1: {
+    contract: 'CC-2025-001', month: '2024-12', operate: '2026-06',
+    note: '当前：2024-12 在合同生效前（2025-04 之前），不允许补计提'
+  },
+  fail2: {
+    contract: 'CC-2025-001', month: '2026-06', operate: '2026-06',
+    note: '当前：2026-06 在合同到期后（2026-04 之后），不允许补计提'
+  }
+};
+
+function loadScenario(key, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const s = scenarios[key];
+  document.getElementById('contractSel').value = s.contract;
+  document.getElementById('settlementMonth').value = s.month;
+  document.getElementById('operateMonth').value = s.operate;
+  document.getElementById('scenarioNote').textContent = s.note;
+  onContractChange();
+  runCheck();
+}
+
+function onContractChange() {
+  const sel = document.getElementById('contractSel');
+  const opt = sel.options[sel.selectedIndex];
+  const start = opt.getAttribute('data-start');
+  const end = opt.getAttribute('data-end');
+  document.getElementById('contractRange').textContent = `合同有效期：${start} ~ ${end}`;
+  runCheck();
+}
+
+function runCheck() {
+  const sel = document.getElementById('contractSel');
+  const opt = sel.options[sel.selectedIndex];
+  const start = opt.getAttribute('data-start'); // e.g. "2025-04"
+  const end = opt.getAttribute('data-end');     // e.g. "2026-04"
+  const month = document.getElementById('settlementMonth').value; // e.g. "2025-08"
+  const resultBox = document.getElementById('resultBox');
+  const tlWrap = document.getElementById('timelineWrap');
+
+  if (!month || !start || !end) {
+    resultBox.className = 'result-box';
+    resultBox.style.display = 'none';
+    return;
+  }
+
+  const startYm = start.replace('-','');
+  const endYm = end.replace('-','');
+  const targetYm = month.replace('-','');
+
+  const pass = targetYm >= startYm && targetYm <= endYm;
+
+  resultBox.className = 'result-box ' + (pass ? 'pass' : 'fail');
+  resultBox.style.display = 'block';
+  if (pass) {
+    resultBox.innerHTML = `<span class="result-icon">✅</span> <strong>校验通过</strong>：计提月份 <strong>${month}</strong> 在合同有效期 <strong>${start} ~ ${end}</strong> 内，允许补计提。`;
+  } else if (targetYm < startYm) {
+    resultBox.innerHTML = `<span class="result-icon">❌</span> <strong>校验失败</strong>：计提月份 <strong>${month}</strong> 早于合同生效时间 <strong>${start}</strong>，不允许补计提。<br><small style="color:#c62828">错误提示：计提月份不在合同有效期内，无法导入</small>`;
+  } else {
+    resultBox.innerHTML = `<span class="result-icon">❌</span> <strong>校验失败</strong>：计提月份 <strong>${month}</strong> 晚于合同到期时间 <strong>${end}</strong>，不允许补计提。<br><small style="color:#c62828">错误提示：计提月份不在合同有效期内，无法导入</small>`;
+  }
+
+  // Draw timeline
+  tlWrap.style.display = 'block';
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+
+  // Create simple bar: [before contract] [contract period] [after contract]
+  // Determine positions
+  const allMonths = [];
+  // 3 months before start, contract period, 3 months after end
+  const addM = (ym) => {
+    let y = parseInt(ym.substr(0,4));
+    let m = parseInt(ym.substr(4,2));
+    return `${y}-${String(m).padStart(2,'0')}`;
+  };
+  const subM = (ym, n) => {
+    let y = parseInt(ym.substr(0,4));
+    let m = parseInt(ym.substr(4,2));
+    m -= n;
+    while (m <= 0) { m += 12; y--; }
+    return `${y}${String(m).padStart(2,'0')}`;
+  };
+  const addMN = (ym, n) => {
+    let y = parseInt(ym.substr(0,4));
+    let m = parseInt(ym.substr(4,2));
+    m += n;
+    while (m > 12) { m -= 12; y++; }
+    return `${y}${String(m).padStart(2,'0')}`;
+  };
+
+  const tlStart = subM(startYm, 3);
+  const tlEnd = addMN(endYm, 3);
+
+  const totalMonths = (parseInt(tlEnd.substr(0,4)) - parseInt(tlStart.substr(0,4)))*12 + (parseInt(tlEnd.substr(4,2)) - parseInt(tlStart.substr(4,2))) + 1;
+
+  const contractStart = (parseInt(startYm.substr(0,4)) - parseInt(tlStart.substr(0,4)))*12 + (parseInt(startYm.substr(4,2)) - parseInt(tlStart.substr(4,2)));
+  const contractEnd = (parseInt(endYm.substr(0,4)) - parseInt(tlStart.substr(0,4)))*12 + (parseInt(endYm.substr(4,2)) - parseInt(tlStart.substr(4,2)));
+  const targetPos = (parseInt(targetYm.substr(0,4)) - parseInt(tlStart.substr(0,4)))*12 + (parseInt(targetYm.substr(4,2)) - parseInt(tlStart.substr(4,2)));
+
+  const W = 600;
+  const barH = 16;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', 50);
+
+  // Background bar (full, gray)
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bgRect.setAttribute('x', 0); bgRect.setAttribute('y', 10);
+  bgRect.setAttribute('width', W); bgRect.setAttribute('height', barH);
+  bgRect.setAttribute('fill', '#ffcdd2'); bgRect.setAttribute('rx', 3);
+  svg.appendChild(bgRect);
+
+  // Contract period bar (green)
+  const cStart = Math.floor(contractStart / totalMonths * W);
+  const cEnd = Math.ceil((contractEnd+1) / totalMonths * W);
+  const cRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  cRect.setAttribute('x', cStart); cRect.setAttribute('y', 10);
+  cRect.setAttribute('width', cEnd-cStart); cRect.setAttribute('height', barH);
+  cRect.setAttribute('fill', '#a5d6a7'); cRect.setAttribute('rx', 0);
+  svg.appendChild(cRect);
+
+  // Target marker
+  const tX = Math.floor((targetPos + 0.5) / totalMonths * W);
+  const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  circle.setAttribute('cx', tX); circle.setAttribute('cy', 18);
+  circle.setAttribute('r', 7);
+  circle.setAttribute('fill', pass ? '#4caf50' : '#f44336');
+  circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', 2);
+  svg.appendChild(circle);
+
+  // Labels
+  const mkLabel = (text, x, anchor) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', x); t.setAttribute('y', 44);
+    t.setAttribute('text-anchor', anchor);
+    t.setAttribute('font-size', '11');
+    t.setAttribute('fill', '#4e5969');
+    t.textContent = text;
+    svg.appendChild(t);
+  };
+  mkLabel(addM(startYm), cStart, 'middle');
+  mkLabel(addM(endYm), cEnd, 'middle');
+  mkLabel(month, tX, 'middle');
+
+  // Label "计提月份" above dot
+  const dotLabel = document.createElementNS('http://www.w3.org/2000/svg','text');
+  dotLabel.setAttribute('x', tX); dotLabel.setAttribute('y', 7);
+  dotLabel.setAttribute('text-anchor', 'middle');
+  dotLabel.setAttribute('font-size', '10');
+  dotLabel.setAttribute('fill', pass ? '#2e7d32' : '#c62828');
+  dotLabel.textContent = '计提月份';
+  svg.appendChild(dotLabel);
+
+  tl.appendChild(svg);
+}
+
+// Init
+onContractChange();
+runCheck();
+</script>
+</body>
+</html>

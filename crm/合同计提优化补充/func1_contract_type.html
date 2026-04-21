@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>功能一：合同形式字段联动（仅 MIADS 业务线）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6f7;padding:24px;font-size:14px;color:#1f2329}
+.container{max-width:900px;margin:0 auto}
+h2{font-size:18px;font-weight:600;margin-bottom:8px}
+.subtitle{color:#8f959e;font-size:13px;margin-bottom:24px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600;color:#1f2329;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f0f0f0}
+.form-row{display:flex;align-items:flex-start;margin-bottom:16px;gap:16px}
+.form-label{width:160px;min-width:160px;padding-top:8px;color:#4e5969;font-size:13px;text-align:right}
+.form-label .req{color:#f53f3f;margin-left:2px}
+.form-field{flex:1;max-width:360px}
+.form-field select,.form-field input{width:100%;height:34px;border:1px solid #d9d9d9;border-radius:4px;padding:0 10px;font-size:13px;color:#1f2329;background:#fff;cursor:pointer;outline:none;transition:border .2s}
+.form-field select:focus,.form-field input:focus{border-color:#3370ff}
+.form-field select:disabled,.form-field input:disabled{background:#f5f6f7;color:#8f959e;cursor:not-allowed;border-color:#e0e0e0}
+.form-field .hint{font-size:12px;color:#8f959e;margin-top:4px}
+.form-field .hint.locked{color:#f53f3f}
+.badge-locked{display:inline-flex;align-items:center;gap:4px;background:#fff3f3;border:1px solid #ffcdd2;color:#f53f3f;border-radius:3px;padding:2px 8px;font-size:12px;margin-left:8px}
+.badge-editable{display:inline-flex;align-items:center;gap:4px;background:#efffea;border:1px solid #aee8a0;color:#2b8f32;border-radius:3px;padding:2px 8px;font-size:12px;margin-left:8px}
+.section-header{font-size:13px;font-weight:600;color:#8f959e;letter-spacing:.5px;text-transform:uppercase;margin:20px 0 12px;display:flex;align-items:center;gap:8px}
+.section-header::after{content:'';flex:1;height:1px;background:#f0f0f0}
+.rule-box{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.7;color:#5c4000}
+.rule-box strong{color:#3d2b00}
+.scenario-tabs{display:flex;gap:8px;margin-bottom:20px}
+.tab{padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1px solid #d9d9d9;background:#fff;color:#4e5969;transition:all .2s}
+.tab.active{background:#3370ff;color:#fff;border-color:#3370ff}
+.tab:hover:not(.active){border-color:#3370ff;color:#3370ff}
+.scenario-note{background:#f0f4ff;border-left:3px solid #3370ff;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:13px;color:#1f2329}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>功能一：合同形式字段（线上 / 线下）</h2>
+  <p class="subtitle">仅广告 MIADS 业务线展示此字段；其他业务线不显示</p>
+
+  <div class="rule-box">
+    <strong>核心规则：</strong>选择「线上」时，DPA / NDA / 签署状态 三个字段自动锁定为固定值，不可编辑；选择「线下」时恢复可编辑。
+  </div>
+
+  <div class="scenario-tabs">
+    <div class="tab active" onclick="setMode('online')">场景一：选择「线上」</div>
+    <div class="tab" onclick="setMode('offline')">场景二：选择「线下」</div>
+    <div class="tab" onclick="setMode('switch')">场景三：线下→线上切换</div>
+  </div>
+
+  <div id="scenario-note" class="scenario-note">当前：选择「线上」 → DPA / NDA / 签署状态 自动填入并锁定，不可修改</div>
+
+  <div class="card">
+    <div class="card-title">合同信息</div>
+
+    <div class="form-row">
+      <div class="form-label">合同类型（原有字段）</div>
+      <div class="form-field">
+        <select><option>新签</option><option>补充协议</option></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">合同形式<span class="req">*</span>
+        <span id="badge" class="badge-locked">🔒 线上联动</span>
+      </div>
+      <div class="form-field">
+        <select id="contractType" onchange="onContractTypeChange(this.value)">
+          <option value="online">线上</option>
+          <option value="offline">线下</option>
+        </select>
+        <div class="hint">选择「线上」时，下方三个字段自动锁定</div>
+      </div>
+    </div>
+
+    <div class="section-header">以下字段受合同形式联动控制</div>
+
+    <div class="form-row">
+      <div class="form-label">是否需要 DPA<span class="req">*</span></div>
+      <div class="form-field">
+        <select id="dpa" disabled>
+          <option value="yes">是</option>
+          <option value="no">否</option>
+        </select>
+        <div id="dpa-hint" class="hint locked">🔒 线上合同固定为「是」，不可修改</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">是否需要 NDA<span class="req">*</span></div>
+      <div class="form-field">
+        <select id="nda" disabled>
+          <option value="yes">是</option>
+          <option value="no">否</option>
+        </select>
+        <div id="nda-hint" class="hint locked">🔒 线上合同固定为「是」，不可修改</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">签署状态<span class="req">*</span></div>
+      <div class="form-field">
+        <select id="signStatus" disabled>
+          <option value="bothSign">双方已签</option>
+          <option value="partSign">单方已签</option>
+          <option value="none">未签</option>
+        </select>
+        <div id="sign-hint" class="hint locked">🔒 线上合同固定为「双方已签」，不可修改</div>
+      </div>
+    </div>
+
+    <div class="section-header">其他字段（不受合同形式影响）</div>
+
+    <div class="form-row">
+      <div class="form-label">合同编号</div>
+      <div class="form-field">
+        <input type="text" value="CC-2026-00123" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">生效日期<span class="req">*</span></div>
+      <div class="form-field">
+        <input type="date" value="2026-01-01" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="rule-card">
+    <div class="card-title">切换规则说明</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:#f5f6f7">
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">合同形式</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">是否需要 DPA</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">是否需要 NDA</th>
+          <th style="padding:10px 12px;text-align:left;border:1px solid #e8e8e8">签署状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;font-weight:600;color:#3370ff">线上</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">锁定 = <strong>是</strong>，不可改</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">锁定 = <strong>是</strong>，不可改</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">锁定 = <strong>双方已签</strong>，不可改</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8;font-weight:600;color:#2b8f32">线下</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">自由编辑</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">自由编辑</td>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">自由编辑</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">线下 → 线上</td>
+          <td colspan="3" style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969">三字段自动填入锁定值（保留原值后覆盖）</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 12px;border:1px solid #e8e8e8">线上 → 线下</td>
+          <td colspan="3" style="padding:10px 12px;border:1px solid #e8e8e8;color:#4e5969">三字段恢复可编辑，<strong>保留当前值</strong>，用户可按需修改</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function setMode(mode) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+  event.target.classList.add('active');
+  const note = document.getElementById('scenario-note');
+  const dpa = document.getElementById('dpa');
+  const nda = document.getElementById('nda');
+  const sign = document.getElementById('signStatus');
+  const ct = document.getElementById('contractType');
+  const badge = document.getElementById('badge');
+  const dpaHint = document.getElementById('dpa-hint');
+  const ndaHint = document.getElementById('nda-hint');
+  const signHint = document.getElementById('sign-hint');
+
+  if (mode === 'online') {
+    ct.value = 'online';
+    dpa.disabled = true; dpa.value = 'yes';
+    nda.disabled = true; nda.value = 'yes';
+    sign.disabled = true; sign.value = 'bothSign';
+    badge.className = 'badge-locked'; badge.textContent = '🔒 线上联动';
+    dpaHint.className = 'hint locked'; dpaHint.textContent = '🔒 线上合同固定为「是」，不可修改';
+    ndaHint.className = 'hint locked'; ndaHint.textContent = '🔒 线上合同固定为「是」，不可修改';
+    signHint.className = 'hint locked'; signHint.textContent = '🔒 线上合同固定为「双方已签」，不可修改';
+    note.textContent = '当前：选择「线上」→ DPA / NDA / 签署状态 自动填入并锁定，不可修改';
+  } else if (mode === 'offline') {
+    ct.value = 'offline';
+    dpa.disabled = false; nda.disabled = false; sign.disabled = false;
+    badge.className = 'badge-editable'; badge.textContent = '✓ 线下可编辑';
+    dpaHint.className = 'hint'; dpaHint.textContent = '可自由选择';
+    ndaHint.className = 'hint'; ndaHint.textContent = '可自由选择';
+    signHint.className = 'hint'; signHint.textContent = '可自由选择';
+    note.textContent = '当前：选择「线下」→ DPA / NDA / 签署状态 均可自由编辑';
+  } else if (mode === 'switch') {
+    // start in offline mode, switch to online
+    ct.value = 'offline';
+    dpa.disabled = false; dpa.value = 'no';
+    nda.disabled = false; nda.value = 'no';
+    sign.disabled = false; sign.value = 'partSign';
+    badge.className = 'badge-editable'; badge.textContent = '✓ 线下可编辑';
+    dpaHint.className = 'hint'; dpaHint.textContent = '线下状态：当前为「否」';
+    ndaHint.className = 'hint'; ndaHint.textContent = '线下状态：当前为「否」';
+    signHint.className = 'hint'; signHint.textContent = '线下状态：当前为「单方已签」';
+    note.textContent = '当前：线下合同，DPA=否 / NDA=否 / 签署=单方已签 → 请切换「合同形式」下拉为「线上」查看联动效果';
+    ct.focus();
+  }
+}
+function onContractTypeChange(val) {
+  const dpa = document.getElementById('dpa');
+  const nda = document.getElementById('nda');
+  const sign = document.getElementById('signStatus');
+  const badge = document.getElementById('badge');
+  const dpaHint = document.getElementById('dpa-hint');
+  const ndaHint = document.getElementById('nda-hint');
+  const signHint = document.getElementById('sign-hint');
+  if (val === 'online') {
+    dpa.disabled = true; dpa.value = 'yes';
+    nda.disabled = true; nda.value = 'yes';
+    sign.disabled = true; sign.value = 'bothSign';
+    badge.className = 'badge-locked'; badge.textContent = '🔒 线上联动';
+    dpaHint.className = 'hint locked'; dpaHint.textContent = '🔒 线上合同固定为「是」，不可修改';
+    ndaHint.className = 'hint locked'; ndaHint.textContent = '🔒 线上合同固定为「是」，不可修改';
+    signHint.className = 'hint locked'; signHint.textContent = '🔒 线上合同固定为「双方已签」，不可修改';
+  } else {
+    dpa.disabled = false; nda.disabled = false; sign.disabled = false;
+    badge.className = 'badge-editable'; badge.textContent = '✓ 线下可编辑';
+    dpaHint.className = 'hint'; dpaHint.textContent = '可自由选择';
+    ndaHint.className = 'hint'; ndaHint.textContent = '可自由选择';
+    signHint.className = 'hint'; signHint.textContent = '可自由选择';
+  }
+}
+</script>
+</body>
+</html>
